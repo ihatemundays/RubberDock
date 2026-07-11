@@ -85,6 +85,15 @@ const Stack = props => {
             return;
         }
 
+        // A stack with only one tab renders as that item itself (see `isSole`
+        // below), so dropping it back onto its own body is the item being
+        // dropped onto itself: it would clone the item into a new split
+        // panel and then immediately deregister the original, making it look
+        // like the item just vanished. Ignore that no-op drop.
+        if (isSole && stackId === id) {
+            return;
+        }
+
         switch (stackDraggedClass) {
             case 'dragged-before-column':
                 if (!onParentDrop(itemId, GridGroupType.Column, GridPosition.Before)) {
@@ -193,12 +202,14 @@ const Stack = props => {
                 {(items || children).map((item, index) => {
                     let { id: itemId } = item;
                     let _item = item?.item || item;
-                    let { tab } = _item.props;
+                    let { tab, hasFullscreen, hasPopOut, hasMaximize, hasClose } = _item.props;
 
                     const spanStyle = isSole ? {width: 'stretch'} : {};
 
                     return (<span key={itemId} style={spanStyle}>
-                        <ItemTab id={itemId} stackId={id} isFocused={focus === itemId} sole={isSole}>
+                        <ItemTab id={itemId} stackId={id} isFocused={focus === itemId} sole={isSole}
+                                 hasFullscreen={hasFullscreen} hasPopOut={hasPopOut} hasMaximize={hasMaximize}
+                                 hasClose={hasClose}>
                             {tab}
                         </ItemTab>
                     </span>);

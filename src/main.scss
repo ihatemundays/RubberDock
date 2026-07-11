@@ -208,6 +208,54 @@ $tabFocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 4%);
     }
   }
 
+  // Self-contained so it renders correctly wherever it's mounted, including
+  // inside a popped-out window's own document (which has no hstack/vstack
+  // ancestor to hang a nested selector off of).
+  &__item {
+    @extend %expand;
+    @include scrollbar();
+    display: none;
+    overflow: auto;
+    background-color: $itemBackgroundColor;
+    color: $layoutForegroundColor;
+    opacity: 0;
+    transition: opacity 0.5s ease-in;
+    &.active.focused {
+      display: block;
+      opacity: 1;
+    }
+    &.fullscreen {
+      @extend %full;
+      display: block;
+      opacity: 1;
+      position: fixed;
+      z-index: 1000;
+    }
+    &.popped-out {
+      display: block !important;
+      opacity: 1 !important;
+      position: static !important;
+    }
+    .rubber-dock__item__container {
+      .rubber-dock__item__body {
+        padding: 15px;
+        &--popped-out {
+          @extend %expand;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+          color: rgba($layoutForegroundColor, 0.4);
+          font-size: 2em;
+          cursor: pointer;
+          &:hover {
+            color: rgba($layoutForegroundColor, 0.7);
+          }
+        }
+      }
+    }
+  }
+
   &__hstack, &__vstack {
     .dragged-before-column:after {
       @extend %dragAndDrop;
@@ -263,6 +311,7 @@ $tabFocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 4%);
       .rubber-dock__item-tab {
         @include itemTab(inset 0 2px 0 $focusedForegroundColor);
         .rubber-dock__item-tab__label {
+          margin: auto;
           display: inline-block;
           padding: 0 10px 0 15px;
         }
@@ -278,36 +327,6 @@ $tabFocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 4%);
     &__items {
       @extend %expand;
       position: relative;
-      .rubber-dock__item {
-        @extend %expand;
-        @include scrollbar();
-        display: none;
-        overflow: auto;
-        background-color: $itemBackgroundColor;
-        opacity: 0;
-        transition: opacity 0.5s ease-in;
-        &.active.focused {
-          display: block;
-          opacity: 1;
-        }
-        &.fullscreen {
-          @extend %full;
-          display: block;
-          opacity: 1;
-          position: fixed;
-          z-index: 1000;
-        }
-        &.popped-out {
-          display: block !important;
-          opacity: 1 !important;
-          position: static !important;
-        }
-        .rubber-dock__item__container {
-          .rubber-dock__item__body {
-            padding: 15px;
-          }
-        }
-      }
     }
   }
 
@@ -348,6 +367,7 @@ $tabFocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 4%);
       .rubber-dock__item-tab {
         @include itemTab(inset 2px 0 0 $focusedForegroundColor);
         .rubber-dock__item-tab__label {
+          margin: auto;
           width: 100%;
           display: inline-block;
           padding: 0 10px 0 15px;
@@ -361,36 +381,6 @@ $tabFocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 4%);
     &__items {
       @extend %expand;
       position: relative;
-      .rubber-dock__item {
-        @extend %expand;
-        @include scrollbar();
-        display: none;
-        overflow: auto;
-        background-color: $itemBackgroundColor;
-        opacity: 0;
-        transition: opacity 0.5s ease-in;
-        &.active.focused {
-          display: block;
-          opacity: 1;
-        }
-        &.fullscreen {
-          @extend %full;
-          display: block;
-          opacity: 1;
-          position: fixed;
-          z-index: 1000;
-        }
-        &.popped-out {
-          display: block !important;
-          opacity: 1 !important;
-          position: static !important;
-        }
-        .rubber-dock__item__container {
-          .rubber-dock__item__body {
-            padding: 15px;
-          }
-        }
-      }
     }
   }
 }

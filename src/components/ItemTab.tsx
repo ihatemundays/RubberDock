@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import { useDockState, useDockStore } from "../store/DockContext";
-import { cx, itemElementId, tabElementId } from "../util/common";
+import {useEffect, useRef, useState} from "react";
+import {useDockState, useDockStore} from "../store/DockContext";
+import {cx, itemElementId, tabElementId} from "../util/common";
 
-const ItemTab = ({ children, stackId, id, isFocused, sole }) => {
+const ItemTab = ({
+                     children, stackId, id, isFocused, sole,
+                     hasFullscreen = true, hasPopOut = true, hasMaximize = true, hasClose = true}) => {
     const store = useDockStore();
     const { items } = useDockState();
     const isFullscreen = items[id]?.isFullscreen;
@@ -10,7 +12,6 @@ const ItemTab = ({ children, stackId, id, isFocused, sole }) => {
     const ref = useRef<HTMLDivElement>(null);
     const [isActive, setIsActive] = useState(false);
     const [isMonitorFullscreen, setIsMonitorFullscreen] = useState(false);
-    const [isExpanded, setIsExpanded] = useState(false);
 
     useEffect(() => {
         setIsActive(true);
@@ -53,8 +54,6 @@ const ItemTab = ({ children, stackId, id, isFocused, sole }) => {
         store.outDrag();
     };
 
-    const showActions = sole || isExpanded;
-
     return (<div
         ref={ref}
         id={tabElementId(id)}
@@ -65,20 +64,21 @@ const ItemTab = ({ children, stackId, id, isFocused, sole }) => {
         <div className="rubber-dock__item-tab__label" onClick={() => store.focusItem(stackId, id)}>
             {children}
         </div>
-        <div className="rubber-dock__item-tab__button-bar">
-            {!sole && (
-                <i className={cx('fas fa-ellipsis rubber-dock__icon-button', isExpanded && 'rubber-dock__icon-button--active')} title={isExpanded ? 'Fewer actions' : 'More actions'} onClick={() => setIsExpanded(!isExpanded)} />
-            )}
-            {showActions && (poppedOut ? (
-                <i className="fas fa-arrow-left rubber-dock__icon-button" title="Dock" onClick={() => store.dockItem(id)} />
-            ) : (<>
-                <i className={cx('fas', isMonitorFullscreen ? 'fa-compress' : 'fa-expand', 'rubber-dock__icon-button')} title="Full screen" onClick={toggleMonitorFullscreen} />
-                <i className="fas fa-up-right-from-square rubber-dock__icon-button" title="Pop out" onClick={() => store.popOutItem(id)} />
-                <i className={cx('far', isFullscreen ? 'fa-window-restore' : 'fa-window-maximize', 'rubber-dock__icon-button')} title="Maximize" onClick={() => store.toggleItemFullscreen(id)} />
-            </>))}
-            <i className="far fa-window-close rubber-dock__icon-button" title="Close" onClick={() => store.deregisterItem(stackId, id)} />
-        </div>
-    </div>);
+        {(isFocused && (
+            <div className="rubber-dock__item-tab__button-bar">
+                {poppedOut ? (
+                    <i className="fas fa-arrow-left rubber-dock__icon-button" title="Dock" onClick={() => store.dockItem(id)} />
+                ) : (<>
+                    {hasFullscreen && <i className={cx('fas', isMonitorFullscreen ? 'fa-compress' : 'fa-expand', 'rubber-dock__icon-button')} title="Full screen" onClick={toggleMonitorFullscreen} />}
+                    {hasPopOut && <i className="fas fa-up-right-from-square rubber-dock__icon-button" title="Pop out" onClick={() => store.popOutItem(id)} />}
+                    {hasMaximize && <i className={cx('far', isFullscreen ? 'fa-window-restore' : 'fa-window-maximize', 'rubber-dock__icon-button')} title="Maximize" onClick={() => store.toggleItemFullscreen(id)} />}
+                </>)}
+                {hasClose && <i className="far fa-window-close rubber-dock__icon-button" title="Close" onClick={() => store.deregisterItem(stackId, id)} />}
+            </div>)) || (
+            <div className="rubber-dock__item-tab__button-bar">
+                {hasClose && <i className="far fa-window-close rubber-dock__icon-button" title="Close" onClick={() => store.deregisterItem(stackId, id)} />}
+            </div>)}
+        </div>);
 };
 
 export default ItemTab;
