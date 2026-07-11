@@ -226,10 +226,35 @@ $tabFocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 4%);
     }
     &.fullscreen {
       @extend %full;
-      display: block;
+      display: flex;
+      flex-direction: column;
       opacity: 1;
+      overflow: hidden;
       position: fixed;
       z-index: 1000;
+      .rubber-dock__item__maximize-bar {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        height: 32px;
+        max-height: 32px;
+        padding: 0 4px 0 15px;
+        background-color: $tabFocusedBackgroundColor;
+        box-shadow: inset 0 2px 0 $focusedForegroundColor;
+        &__label {
+          flex: 1 1 auto;
+          color: $focusedForegroundColor;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+      .rubber-dock__item__container {
+        @include scrollbar();
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+      }
     }
     &.popped-out {
       display: block !important;

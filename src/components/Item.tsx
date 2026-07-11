@@ -6,7 +6,7 @@ import { usePopoutWindow } from "../hooks/usePopoutWindow";
 import { cx, itemElementId, tabElementId } from "../util/common";
 
 const Item = props => {
-    const { children, id, stackId, stackIndex, item, focus, isFocused, sole } = props;
+    const { children, id, stackId, stackIndex, item, focus, isFocused, sole, tab } = props;
     const ref = useRef<HTMLDivElement>(null);
     const store = useDockStore();
     const { items } = useDockState();
@@ -35,7 +35,12 @@ const Item = props => {
         className={cx('rubber-dock__item', isActive && 'active', isFullscreen && !poppedOut && 'fullscreen', isFocused && 'focused', poppedOut && 'popped-out')}
         {...(poppedOut || sole ? {} : { role: 'tabpanel', 'aria-labelledby': tabElementId(id), tabIndex: 0 })}
     >
-        {isFullscreen && !poppedOut ? (<i className="far fa-window-minimize fa-lg rubber-dock__icon-button" onClick={toggleItemFullscreen} />) : ''}
+        {isFullscreen && !poppedOut ? (
+            <div className="rubber-dock__item__maximize-bar">
+                <div className="rubber-dock__item__maximize-bar__label">{tab}</div>
+                <i className="far fa-window-restore rubber-dock__icon-button" title="Minimize" onClick={toggleItemFullscreen} />
+            </div>
+        ) : ''}
         <div className="rubber-dock__item__container">
             <div className="rubber-dock__item__body">
                 {Children.map(children, child => {
