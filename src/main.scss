@@ -7,12 +7,14 @@ $resizerSize: 5px;
 $resizerColor: #ccc;
 $scrollbarSize: 8px;
 $scrollbarBackgroundColor: $itemBackgroundColor;
-$scrollbarForegroundColor: #313131;
+$scrollbarForegroundColor: #6c6c6c;
 $dragAndDropColor: #313131;
 $dragAndDropBorder: $layoutForegroundColor dashed 3px;
 $focusedForegroundColor: #fb1;
-$tabHoverBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 6%);
+$unfocusedForegroundColor: #6c6c6c;
+$tabHoverBackgroundColor: #3c3c3c;
 $tabFocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 4%);
+$tabUnfocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: -4%);
 
 %expand {
   width: 100%;
@@ -147,7 +149,8 @@ $tabFocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 4%);
     opacity: 1;
   }
   &:hover {
-    background-color: $tabHoverBackgroundColor;
+    cursor: pointer;
+    background-color: $tabHoverBackgroundColor !important;
   }
   .rubber-dock__item-tab__button-bar {
     display: flex;
@@ -335,6 +338,10 @@ $tabFocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 4%);
       }
       .rubber-dock__item-tab {
         @include itemTab(inset 0 2px 0 $focusedForegroundColor);
+        &.active:not(.focused) {
+          background-color: $tabUnfocusedBackgroundColor;
+          color: $unfocusedForegroundColor;
+        }
         .rubber-dock__item-tab__label {
           margin: auto;
           display: inline-block;
@@ -391,6 +398,10 @@ $tabFocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 4%);
       }
       .rubber-dock__item-tab {
         @include itemTab(inset 2px 0 0 $focusedForegroundColor);
+        &.active:not(.focused) {
+          background-color: $tabUnfocusedBackgroundColor;
+          color: $unfocusedForegroundColor;
+        }
         .rubber-dock__item-tab__label {
           margin: auto;
           width: 100%;
