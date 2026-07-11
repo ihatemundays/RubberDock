@@ -188,22 +188,25 @@ const Stack = props => {
     }
 
     return (<div className={cx(className, 'active')}>
-        <div ref={tabsRef} {...(isSole ? {} : { role: 'tablist', 'aria-orientation': vertical ? 'vertical' : 'horizontal', onKeyDown: onTabsKeyDown })} className={`${className}__item-tabs`}>
-            {(items || children).map((item, index) => {
-                const position = index + 1;
-                let { id: itemId } = item;
-                let _item = item?.item || item;
-                let { tab } = _item.props;
+        <div ref={tabsRef} className={`${className}__item-tabs`}>
+            <div {...(isSole ? {} : { role: 'tablist', 'aria-orientation': vertical ? 'vertical' : 'horizontal', onKeyDown: onTabsKeyDown })} className={`${className}__item-tabs__list`}>
+                {(items || children).map((item, index) => {
+                    let { id: itemId } = item;
+                    let _item = item?.item || item;
+                    let { tab } = _item.props;
 
-                return (<span key={itemId}>
-                    <ItemTab id={itemId} stackId={id} isFocused={focus === itemId} sole={isSole}>
-                        {tab}
-                    </ItemTab>
-                </span>);
-            })}
+                    const spanStyle = isSole ? {width: 'stretch'} : {};
+
+                    return (<span key={itemId} style={spanStyle}>
+                        <ItemTab id={itemId} stackId={id} isFocused={focus === itemId} sole={isSole}>
+                            {tab}
+                        </ItemTab>
+                    </span>);
+                })}
+            </div>
             <div className="rubber-dock__item-tab__button-bar">
                 <div>
-                    <i className="fas fa-adjust fa-lg rubber-dock__icon-button" title="Toggle orientation" onClick={() => setVertical(!vertical)} />
+                    <i className="fas fa-table-columns fa-lg rubber-dock__icon-button" title="Toggle orientation" onClick={() => setVertical(!vertical)} />
                 </div>
             </div>
         </div>

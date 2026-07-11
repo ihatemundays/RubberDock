@@ -238,17 +238,24 @@ $tabFocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 4%);
     flex: 1 1 auto;
     overflow: hidden;
     &__item-tabs {
-      @include scrollbar();
       display: flex;
       align-items: center;
       flex-direction: row;
       flex: 0 0 auto;
       gap: 2px;
-      overflow-x: scroll;
-      overflow-y: hidden;
+      &__list {
+        @include scrollbar();
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+        flex: 1 1 auto;
+        gap: 2px;
+        min-width: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+      }
       >.rubber-dock__item-tab__button-bar {
         flex: 0 0 auto;
-        margin-left: auto;
         display: flex;
         align-items: center;
         gap: 4px;
@@ -312,17 +319,28 @@ $tabFocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 4%);
     flex: 1 1 auto;
     overflow: hidden;
     &__item-tabs {
-      @include scrollbar();
       display: flex;
       align-items: center;
       flex-direction: column;
       flex: 0 0 auto;
       gap: 2px;
-      overflow-x: hidden;
-      overflow-y: scroll;
+      &__list {
+        @include scrollbar();
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        flex: 1 1 auto;
+        gap: 2px;
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+
+        span {
+          width: stretch;
+        }
+      }
       >.rubber-dock__item-tab__button-bar {
         flex: 0 0 auto;
-        margin-top: auto;
         display: flex;
         align-items: center;
         gap: 4px;
