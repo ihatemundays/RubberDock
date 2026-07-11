@@ -166,6 +166,35 @@ $tabUnfocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: -4%
   }
 }
 
+// Highlights which side of a tab a dragged tab would land on if dropped now.
+// $row: true lays the bar along the left/right edges (hstack), false along
+// top/bottom (vstack).
+@mixin tabDropZone($row) {
+  position: relative;
+  &--before::before, &--after::after {
+    content: '';
+    position: absolute;
+    background-color: $focusedForegroundColor;
+    border-radius: 2px;
+    pointer-events: none;
+    @if $row {
+      top: 2px;
+      bottom: 2px;
+      width: 3px;
+    } @else {
+      left: 2px;
+      right: 2px;
+      height: 3px;
+    }
+  }
+  &--before::before {
+    @if $row { left: -2px; } @else { top: -2px; }
+  }
+  &--after::after {
+    @if $row { right: -2px; } @else { bottom: -2px; }
+  }
+}
+
 .rubber-dock {
   &__layout {
     @extend %grid;
@@ -330,6 +359,9 @@ $tabUnfocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: -4%
         overflow-x: auto;
         overflow-y: hidden;
       }
+      .rubber-dock__item-tab-drop-zone {
+        @include tabDropZone(true);
+      }
       >.rubber-dock__item-tab__button-bar {
         flex: 0 0 auto;
         display: flex;
@@ -389,6 +421,9 @@ $tabUnfocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: -4%
         span {
           width: stretch;
         }
+      }
+      .rubber-dock__item-tab-drop-zone {
+        @include tabDropZone(false);
       }
       >.rubber-dock__item-tab__button-bar {
         flex: 0 0 auto;

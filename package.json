@@ -20,13 +20,23 @@
   ],
   "scripts": {
     "build": "tsup",
+    "build:demo": "vite build",
+    "preview:demo": "vite preview",
     "dev": "vite",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run typecheck && npm run build"
   },
   "keywords": ["react", "dock", "layout", "grid", "docking"],
-  "author": "",
+  "author": "Scott Munday",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ihatemundays/RubberDock.git"
+  },
+  "homepage": "https://ihatemundays.github.io/RubberDock/",
+  "bugs": {
+    "url": "https://github.com/ihatemundays/RubberDock/issues"
+  },
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

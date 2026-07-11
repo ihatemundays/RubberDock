@@ -113,7 +113,10 @@ export class DockStore extends EventTarget {
         const stackItems = [...stack.items];
         stackItems.splice(position, 0, newId);
 
-        this.setState({ items: nextItems, stacks: { ...stacks, [stackId]: { ...stack, items: stackItems } } });
+        // Dropping a tab - whether reordering in place or moving it from
+        // another stack - is a deliberate act of putting it there, so it
+        // becomes the one the user is looking at.
+        this.setState({ items: nextItems, stacks: { ...stacks, [stackId]: { ...stack, items: stackItems, focus: newId } } });
     };
 
     toggleItemFullscreen = (id: string) => {

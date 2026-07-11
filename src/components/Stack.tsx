@@ -28,6 +28,7 @@ const Stack = props => {
         ...x,
         id: x.id || crypto.randomUUID(),
     }));
+    const list = items || children;
 
     const [tabsHeight, setTabsHeight] = useState(0);
     const [vertical, setVertical] = useState(_vertical);
@@ -47,6 +48,15 @@ const Stack = props => {
             setTabsHeight(current.offsetHeight);
         }
     }, [vertical, className]);
+
+    // A drag can end anywhere (or nowhere, if the user hits Escape), so the
+    // global drag flag - not a local dragleave - is the only reliable signal
+    // that the drop-position indicator should clear.
+    useEffect(() => {
+        if (!dragging) {
+            setDragTabPosition(-1);
+        }
+    }, [dragging]);
 
     const onDragOver = event => {
         const { left, top, width, height } = (itemsRef.current as any).getBoundingClientRect();
@@ -122,35 +132,70 @@ const Stack = props => {
         }
     };
 
-    const onTabsDragOver = (event, position) => {
-        setDragTabPosition(position);
+    // Which half of a tab the pointer is over decides whether the dragged tab
+    // would land before or after it - a bigger, more forgiving target than a
+    // thin divider between tabs, and it needs no extra DOM per gap.
+    const tabInsertPosition = (event, index) => {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const before = vertical
+            ? event.clientY - rect.top < rect.height / 2
+            : event.clientX - rect.left < rect.width / 2;
+        return before ? index : index + 1;
+    };
+
+    const onTabDragOver = (event, index) => {
         event.preventDefault();
+        event.stopPropagation();
+        setDragTabPosition(tabInsertPosition(event, index));
     };
 
-    const onTabsDragLeave = () => {
+    const onTabDrop = (event, index) => {
+        event.preventDefault();
+        event.stopPropagation();
+        dropTab(event, tabInsertPosition(event, index));
+    };
+
+    // Dropping past the last tab, in the empty space the tab list leaves
+    // after it, appends at the end. Per-tab handlers stop propagation so this
+    // only fires when the drop didn't land on a specific tab.
+    const onTabListDragOver = event => {
+        event.preventDefault();
+        setDragTabPosition(list.length);
+    };
+
+    const onTabListDrop = event => {
+        event.preventDefault();
+        dropTab(event, list.length);
+    };
+
+    const dropTab = (event, position) => {
         setDragTabPosition(-1);
-    };
 
-    const onTabsDrop = event => {
         const type = event.dataTransfer.getData('type');
         const stackId = event.dataTransfer.getData('stackId');
         const itemId = event.dataTransfer.getData('id');
 
-        if (type === 'item' && dragTabPosition !== -1) {
-            store.dropItem(id, itemId, crypto.randomUUID(), dragTabPosition);
-
-            if (event.dataTransfer.effectAllowed === 'move') {
-                store.deregisterItem(stackId, itemId);
-            }
+        if (type !== 'item') {
+            return;
         }
 
-        setDragTabPosition(-1);
+        // Dropping a tab right next to its own current slot doesn't change
+        // its order - skip it instead of re-mounting the item under a new id.
+        const sourceIndex = list.findIndex(x => x.id === itemId);
+        if (sourceIndex !== -1 && (position === sourceIndex || position === sourceIndex + 1)) {
+            return;
+        }
+
+        store.dropItem(id, itemId, crypto.randomUUID(), position);
+
+        if (event.dataTransfer.effectAllowed === 'move') {
+            store.deregisterItem(stackId, itemId);
+        }
     };
 
     // ARIA tablist keyboard navigation: arrow keys move focus and selection
     // together (automatic activation), Home/End jump to the first/last tab.
     const onTabsKeyDown = event => {
-        const list = items || children;
         if (list.length === 0) {
             return;
         }
@@ -180,9 +225,9 @@ const Stack = props => {
 
     // A stack holding just one item isn't really a tab group - render it as a
     // plain, full-width header instead of a narrow tab (see ItemTab `sole`).
-    const isSole = (items || children).length === 1;
+    const isSole = list.length === 1;
 
-    const isEmpty = (items || children).length === 0;
+    const isEmpty = list.length === 0;
 
     // Notifying the parent belongs after render/commit, not during Stack's own render.
     useEffect(() => {
@@ -198,15 +243,23 @@ const Stack = props => {
 
     return (<div className={cx(className, 'active')}>
         <div ref={tabsRef} className={`${className}__item-tabs`}>
-            <div {...(isSole ? {} : { role: 'tablist', 'aria-orientation': vertical ? 'vertical' : 'horizontal', onKeyDown: onTabsKeyDown })} className={`${className}__item-tabs__list`}>
-                {(items || children).map((item, index) => {
+            <div {...(isSole ? {} : { role: 'tablist', 'aria-orientation': vertical ? 'vertical' : 'horizontal', onKeyDown: onTabsKeyDown })}
+                 className={`${className}__item-tabs__list`} onDragOver={onTabListDragOver} onDrop={onTabListDrop}>
+                {list.map((item, index) => {
                     let { id: itemId } = item;
                     let _item = item?.item || item;
                     let { tab, hasFullscreen, hasPopOut, hasMaximize, hasClose } = _item.props;
 
                     const spanStyle = isSole ? {width: 'stretch'} : {};
+                    const isLast = index === list.length - 1;
 
-                    return (<span key={itemId} style={spanStyle}>
+                    return (<span key={itemId} style={spanStyle}
+                                  className={cx(
+                                      'rubber-dock__item-tab-drop-zone',
+                                      dragTabPosition === index && 'rubber-dock__item-tab-drop-zone--before',
+                                      isLast && dragTabPosition === list.length && 'rubber-dock__item-tab-drop-zone--after'
+                                  )}
+                                  onDragOver={event => onTabDragOver(event, index)} onDrop={event => onTabDrop(event, index)}>
                         <ItemTab id={itemId} stackId={id} isFocused={focus === itemId} sole={isSole}
                                  hasFullscreen={hasFullscreen} hasPopOut={hasPopOut} hasMaximize={hasMaximize}
                                  hasClose={hasClose}>
@@ -223,7 +276,7 @@ const Stack = props => {
         </div>
         <div ref={itemsRef} className={`${className}__items`} style={{ height: `calc(100% - ${tabsHeight}px)` }} onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}>
             <span className={stackDraggedClass}></span>
-            {(items || children).map((item, index) => {
+            {list.map((item, index) => {
                 let { id: itemId } = item;
                 let _item = item?.item || item;
 

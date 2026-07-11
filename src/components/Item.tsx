@@ -38,7 +38,7 @@ const Item = props => {
         {isFullscreen && !poppedOut ? (
             <div className="rubber-dock__item__maximize-bar">
                 <div className="rubber-dock__item__maximize-bar__label">{tab}</div>
-                <i className="far fa-window-restore rubber-dock__icon-button" title="Minimize" onClick={toggleItemFullscreen} />
+                <i className="far fa-window-restore rubber-dock__icon-button" title="Restore" onClick={toggleItemFullscreen} />
             </div>
         ) : ''}
         <div className="rubber-dock__item__container">
