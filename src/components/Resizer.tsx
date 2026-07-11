@@ -1,11 +1,11 @@
-import React, {useRef} from "react";
+import {useRef} from "react";
 
 const Resizer = props => {
     let {onResize} = props;
-    const ref = useRef();
+    const ref = useRef<HTMLDivElement>(null);
 
     const onMouseDown = () => {
-        let resizer: Element = ref.current;
+        let resizer = ref.current;
         let left = resizer.previousSibling;
         let right = resizer.nextSibling;
 

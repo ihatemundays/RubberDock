@@ -1,4 +1,4 @@
-import React, {cloneElement, Fragment, isValidElement} from "react";
+import {cloneElement, Fragment, isValidElement, ReactElement} from "react";
 import Stack from "./Stack";
 import Item from "./Item";
 import Resizer from "./Resizer";
@@ -21,15 +21,16 @@ const GridGroupInner = props => {
     if (!isValidElement(item)) {
         return null;
     }
+    const element = item as ReactElement<any>;
 
-    const isGridGroup = item.type === Column || item.type === Row;
-    const isStack = item.type === Stack;
-    const isItem = item.type === Item;
+    const isGridGroup = element.type === Column || element.type === Row;
+    const isStack = element.type === Stack;
+    const isItem = element.type === Item;
 
     if (isGridGroup) {
-        return cloneElement(item, {id, onClose});
+        return cloneElement(element, {id, onClose});
     } else if (isStack) {
-        return cloneElement(item, {id, onClose, onDrop});
+        return cloneElement(element, {id, onClose, onDrop});
     } else if (isItem) {
         return (<Stack id={id} onClose={onClose} onDrop={onDrop}>
             {item}

@@ -1,12 +1,19 @@
 {
   "compilerOptions": {
+    "target": "ES2018",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["dom", "dom.iterable", "ES2018"],
+    "jsx": "react-jsx",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "strict": false,
     "esModuleInterop": true,
-    "lib": [
-      "dom",
-      "es6",
-      "scripthost",
-      "es2015.collection"
-    ],
-    "jsx": "react"
-  }
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "dist"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "public"]
 }

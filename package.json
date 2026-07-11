@@ -1,35 +1,46 @@
 {
-  "name": "untitled-layout",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "serve": "npx parcel public/index.html",
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "name": "rubber-dock",
+  "version": "2.0.0",
+  "description": "A simple, powerful dock system made for React",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "sideEffects": [
+    "*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/index.css"
   },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["react", "dock", "layout", "grid", "docking"],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "@babel/cli": "^7.12.8",
-    "@babel/core": "^7.12.9",
-    "@babel/preset-env": "^7.12.7",
-    "@babel/preset-typescript": "^7.12.7",
-    "@fortawesome/fontawesome-free": "^5.15.1",
-    "@types/react": "17.0.0",
-    "@types/react-dom": "17.0.0",
-    "parcel-bundler": "^1.12.4",
-    "sass": "^1.29.0",
-    "typescript": "^4.1.2"
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
-  "dependencies": {
-    "connect": "^3.7.0",
-    "lib": "^4.3.0",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
-    "react-redux": "^7.2.2",
-    "redux": "^4.0.5",
-    "redux-thunk": "^2.3.0",
-    "redux-devtools-extension": "^2.13.8",
-    "uuid": "^8.3.1"
+  "devDependencies": {
+    "@fortawesome/fontawesome-free": "^6.5.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sass": "^1.70.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vite": "^6.0.0"
   }
 }

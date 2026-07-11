@@ -1,25 +1,36 @@
-import React, {Children, cloneElement, isValidElement, useEffect, useRef, useState} from "react";
-import {connect} from "react-redux";
-import {registerItem, toggleItemFullscreen} from "../actions/ItemActions";
+import { Children, cloneElement, isValidElement, useEffect, useRef, useState } from "react";
+import { useDockState, useDockStore } from "../store/DockContext";
+import { useRegisterItem } from "../hooks/useRegisterItem";
+import { cx } from "../util/common";
 
 const Item = props => {
-    let {children, isFullscreen, isFocused, registerItem, toggleItemFullscreen} = props;
-    let ref = useRef();
+    const { children, id, stackId, stackIndex, item, focus, isFocused } = props;
+    const ref = useRef<HTMLDivElement>(null);
+    const store = useDockStore();
+    const { items } = useDockState();
+    const isFullscreen = items[id]?.isFullscreen;
     const [isActive, setIsActive] = useState(false);
+
+    useRegisterItem(stackId, stackIndex, id, item, focus);
+
     useEffect(() => {
         setIsActive(true);
-        registerItem();
     }, []);
 
-    return (<div ref={ref} className={`rubber-dock__item ${isActive ? 'active' : ''} ${isFullscreen ? 'fullscreen' : ''} ${isFocused ? 'focused' : ''}`}>
+    const toggleItemFullscreen = () => store.toggleItemFullscreen(id);
+
+    // Function-component children (e.g. custom tab content) are cloned with the
+    // same props Item received, so they can read things like `id`/`isFullscreen`.
+    const childProps = { ...props, isFullscreen, toggleItemFullscreen };
+
+    return (<div ref={ref} className={cx('rubber-dock__item', isActive && 'active', isFullscreen && 'fullscreen', isFocused && 'focused')}>
         {isFullscreen ? (<i className="far fa-window-minimize fa-lg" onClick={toggleItemFullscreen} />) : ''}
         <div className="rubber-dock__item__container">
             <div className="rubber-dock__item__body">
                 {Children.map(children, child => {
                     if (typeof child.type === 'function' && isValidElement(child)) {
-                        return cloneElement(child, props);
+                        return cloneElement(child, childProps);
                     }
-
                     return child;
                 })}
             </div>
@@ -27,17 +38,4 @@ const Item = props => {
     </div>);
 };
 
-const mapStateToProps = (state, ownProps) => {
-    let item = state.items[ownProps.id];
-
-    return {
-        isFullscreen: item?.isFullscreen
-    };
-};
-
-const mapDispatchToProps = (dispatch, ownProps) => ({
-    registerItem: registerItem(dispatch).bind(null, ownProps.stackId, ownProps.stackIndex, ownProps.onStackClose, ownProps.id, ownProps.item, ownProps?.focus),
-    toggleItemFullscreen: toggleItemFullscreen(dispatch).bind(null, ownProps.id)
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(Item);
+export default Item;

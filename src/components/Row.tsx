@@ -1,42 +1,32 @@
-import React, {cloneElement, Component} from "react";
-import {connect} from "react-redux";
-import {v4 as uuid} from "uuid";
+import { cloneElement, useEffect, useRef, useState } from "react";
 import GridGroup from "./GridGroup";
-import {GridGroupType, GridPosition} from "../util/common";
-import {getChildren} from "../util/helpers";
+import { useDockState } from "../store/DockContext";
+import { GridGroupType, GridPosition } from "../util/common";
+import { getChildren } from "../util/helpers";
 import Column from "./Column";
 
-class Row extends Component<any, any> {
-    constructor(props) {
-        super(props);
-        this.state = {
-            children: getChildren(props.children)
-        }
-    }
+const Row = props => {
+    const { onClose: onParentClose, onBind } = props;
+    const { items } = useDockState();
+    const [children, setChildren] = useState(() => getChildren(props.children));
 
-    componentDidMount() {
-        if (this.props.onBind) {
-            this.props.onBind(this);
-        }
-    }
-
-    onClose(id) {
-        // Remove child
-        let children = [...this.state.children];
-        let index = children.findIndex(x => x.id === id);
-        if (index === -1) {
-            return;
-        }
-        children.splice(index, 1);
-
-        this.setState({
-            children
+    const onClose = id => {
+        setChildren(prev => {
+            const index = prev.findIndex(x => x.id === id);
+            if (index === -1) {
+                return prev;
+            }
+            const next = [...prev];
+            next.splice(index, 1);
+            return next;
         });
-    }
+    };
 
-    onDrop(childId, itemId, gridGroupType: GridGroupType, gridPosition: GridPosition) {
-        let items = this.props.items;
-        let children = [...this.state.children];
+    // stateRef lets onBind's caller (Layout) always reach the latest onDrop, even
+    // though onBind itself is only invoked once on mount.
+    const stateRef = useRef<any>(null);
+    const onDrop = (childId, itemId, gridGroupType: GridGroupType, gridPosition: GridPosition) => {
+        const { children, items } = stateRef.current;
         let index = childId !== null ?
             children.findIndex(x => x.id === childId) :
             gridPosition === GridPosition.Before ? 0 : children.length - 1;
@@ -48,15 +38,14 @@ class Row extends Component<any, any> {
             return false;
         }
 
-        let item = {
+        let item: any = {
             item: cloneElement(items[itemId].item),
-            id: uuid()
+            id: crypto.randomUUID()
         };
 
-        if (gridGroupType === GridGroupType.Column) {  // Need to wrap into column
-            // Build out new structure
-            const childItem = cloneElement(children[index].item);
-
+        let next = [...children];
+        if (gridGroupType === GridGroupType.Column) {
+            const childItem = cloneElement(next[index].item);
             item.item = gridPosition === GridPosition.Before ? (<Column>
                 {item.item}
                 {childItem}
@@ -64,68 +53,63 @@ class Row extends Component<any, any> {
                 {childItem}
                 {item.item}
             </Column>);
-
-            children.splice(index, 1, item);
-        } else {  // Is row
+            next.splice(index, 1, item);
+        } else {
             if (gridPosition === GridPosition.Before) {
-                children.splice(index, 0, item);
+                next.splice(index, 0, item);
             } else {
-                children.splice(index + 1, 0, item);
+                next.splice(index + 1, 0, item);
             }
         }
 
-        this.setState({
-            children
-        });
-
+        setChildren(next);
         return true;
-    }
+    };
+    stateRef.current = { children, items, onDrop };
 
-    onResize(event, left, right) {
+    useEffect(() => {
+        onBind?.({ onDrop: (...args) => stateRef.current.onDrop(...args) });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const onResize = (event, left, right) => {
         const getFlexBasis = element => element.style.flexBasis === '' ? 100.0 : parseFloat(element.style.flexBasis);
-        const {x: leftX, width: leftWidth} = left.getBoundingClientRect();
+        const { x: leftX, width: leftWidth } = left.getBoundingClientRect();
         const relativeX = event.x - leftX;
         const startFlexBasisLeft = getFlexBasis(left);
         const startFlexBasisRight = getFlexBasis(right);
         const startFlexBasis = startFlexBasisLeft + startFlexBasisRight;
 
-        // Handle flex basis
         let flexBasisLeft = Math.max(10.0 / 100.0 * startFlexBasis, relativeX / leftWidth * startFlexBasisLeft);
         let flexBasisRight = Math.max(10.0 / 100.0 * startFlexBasis, startFlexBasis - flexBasisLeft);
         flexBasisLeft = startFlexBasis - flexBasisRight;
         left.style.flexBasis = flexBasisLeft + '%';
         right.style.flexBasis = flexBasisRight + '%';
-    }
-
-    render() {
-        const className = 'rubber-dock__row';
-        const {children} = this.state;
-        const {onClose: onParentClose} = this.props;
-
-        if (children.length === 0) {
-            if (onParentClose !== null) {
-                onParentClose();
-            }
-
-            return null;
-        }
-
-        return (<div className={className}>
-            {children.map((child, index) => {
-                return (<GridGroup
-                    key={child.id} id={child.id} item={child.item}
-                    onClose={() => this.onClose(child.id)}
-                    onDrop={(itemId, gridGroupType, gridPosition) => this.onDrop(child.id, itemId, gridGroupType, gridPosition)}
-                    onResize={index < children.length - 1 ? this.onResize.bind(this) : null}/>);
-            })}
-        </div>);
-    }
-}
-
-const mapStateToProps = state => {
-    return {
-        items: state.items
     };
+
+    const isEmpty = children.length === 0;
+
+    // Notifying the parent belongs after render/commit, not during Row's own render.
+    useEffect(() => {
+        if (isEmpty) {
+            onParentClose?.();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isEmpty]);
+
+    if (isEmpty) {
+        return null;
+    }
+
+    return (<div className="rubber-dock__row">
+        {children.map((child, index) => {
+            return (<GridGroup
+                key={child.id} id={child.id} item={child.item}
+                onClose={() => onClose(child.id)}
+                onDrop={(itemId, gridGroupType, gridPosition) => onDrop(child.id, itemId, gridGroupType, gridPosition)}
+                onResize={index < children.length - 1 ? onResize : null} />);
+        })}
+    </div>);
 };
 
-export default connect(mapStateToProps)(Row);
+export default Row;
