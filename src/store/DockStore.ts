@@ -1,7 +1,7 @@
 export type DockState = {
     dragging: boolean;
     stacks: Record<string, { items: string[]; focus: string | null }>;
-    items: Record<string, { item: any; isFullscreen: boolean }>;
+    items: Record<string, { item: any; isFullscreen: boolean; poppedOut: boolean }>;
 };
 
 const initialState: DockState = { dragging: false, stacks: {}, items: {} };
@@ -55,7 +55,7 @@ export class DockStore extends EventTarget {
         let { items, stacks } = this.state;
 
         if (!(id in items)) {
-            items = { ...items, [id]: { item: { ...item }, isFullscreen: false } };
+            items = { ...items, [id]: { item: { ...item }, isFullscreen: false, poppedOut: false } };
         }
 
         const existingStack = stacks[stackId] ?? { items: [], focus: null };
@@ -102,7 +102,7 @@ export class DockStore extends EventTarget {
         if (!(id in items) || newId in items) {
             return;
         }
-        const nextItems = { ...items, [newId]: { item: { ...items[id].item }, isFullscreen: false } };
+        const nextItems = { ...items, [newId]: { item: { ...items[id].item }, isFullscreen: false, poppedOut: false } };
 
         const stack = stacks[stackId];
         if (!stack) {
@@ -122,5 +122,21 @@ export class DockStore extends EventTarget {
             return;
         }
         this.setState({ items: { ...this.state.items, [id]: { ...item, isFullscreen: !item.isFullscreen } } });
+    };
+
+    popOutItem = (id: string) => {
+        const item = this.state.items[id];
+        if (!item || item.poppedOut) {
+            return;
+        }
+        this.setState({ items: { ...this.state.items, [id]: { ...item, isFullscreen: false, poppedOut: true } } });
+    };
+
+    dockItem = (id: string) => {
+        const item = this.state.items[id];
+        if (!item || !item.poppedOut) {
+            return;
+        }
+        this.setState({ items: { ...this.state.items, [id]: { ...item, poppedOut: false } } });
     };
 }

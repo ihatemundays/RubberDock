@@ -1,7 +1,7 @@
 import { cloneElement, useEffect, useRef, useState } from "react";
 import ItemTab from "./ItemTab";
 import { useDockState, useDockStore } from "../store/DockContext";
-import { GridGroupType, GridPosition, cx } from "../util/common";
+import { GridGroupType, GridPosition, cx, tabElementId } from "../util/common";
 import { useRegisterStack } from "../hooks/useRegisterStack";
 
 const Stack = props => {
@@ -138,6 +138,41 @@ const Stack = props => {
         setDragTabPosition(-1);
     };
 
+    // ARIA tablist keyboard navigation: arrow keys move focus and selection
+    // together (automatic activation), Home/End jump to the first/last tab.
+    const onTabsKeyDown = event => {
+        const list = items || children;
+        if (list.length === 0) {
+            return;
+        }
+
+        const forwardKey = vertical ? 'ArrowDown' : 'ArrowRight';
+        const backwardKey = vertical ? 'ArrowUp' : 'ArrowLeft';
+        const currentIndex = list.findIndex(x => x.id === focus);
+
+        let nextIndex;
+        if (event.key === forwardKey) {
+            nextIndex = (currentIndex + 1) % list.length;
+        } else if (event.key === backwardKey) {
+            nextIndex = (currentIndex - 1 + list.length) % list.length;
+        } else if (event.key === 'Home') {
+            nextIndex = 0;
+        } else if (event.key === 'End') {
+            nextIndex = list.length - 1;
+        } else {
+            return;
+        }
+
+        event.preventDefault();
+        const nextId = list[nextIndex].id;
+        store.focusItem(id, nextId);
+        document.getElementById(tabElementId(nextId))?.focus();
+    };
+
+    // A stack holding just one item isn't really a tab group - render it as a
+    // plain, full-width header instead of a narrow tab (see ItemTab `sole`).
+    const isSole = (items || children).length === 1;
+
     const isEmpty = (items || children).length === 0;
 
     // Notifying the parent belongs after render/commit, not during Stack's own render.
@@ -153,8 +188,7 @@ const Stack = props => {
     }
 
     return (<div className={cx(className, 'active')}>
-        <div ref={tabsRef} className={`${className}__item-tabs`}>
-            <span className={cx('rubber-dock__tab-divider', dragging && 'dragged', dragTabPosition === 0 && 'hover')} onDragOver={event => onTabsDragOver(event, 0)} onDragLeave={onTabsDragLeave} onDrop={onTabsDrop}>&nbsp;</span>
+        <div ref={tabsRef} {...(isSole ? {} : { role: 'tablist', 'aria-orientation': vertical ? 'vertical' : 'horizontal', onKeyDown: onTabsKeyDown })} className={`${className}__item-tabs`}>
             {(items || children).map((item, index) => {
                 const position = index + 1;
                 let { id: itemId } = item;
@@ -162,15 +196,14 @@ const Stack = props => {
                 let { tab } = _item.props;
 
                 return (<span key={itemId}>
-                    <ItemTab id={itemId} stackId={id} isFocused={focus === itemId}>
+                    <ItemTab id={itemId} stackId={id} isFocused={focus === itemId} sole={isSole}>
                         {tab}
                     </ItemTab>
-                    <span className={cx('rubber-dock__tab-divider', dragging && 'dragged', dragTabPosition === position && 'hover')} onDragOver={event => onTabsDragOver(event, position)} onDragLeave={onTabsDragLeave} onDrop={onTabsDrop}>&nbsp;</span>
                 </span>);
             })}
             <div className="rubber-dock__item-tab__button-bar">
                 <div>
-                    <i className="fas fa-adjust fa-lg" onClick={() => setVertical(!vertical)} />
+                    <i className="fas fa-adjust fa-lg rubber-dock__icon-button" title="Toggle orientation" onClick={() => setVertical(!vertical)} />
                 </div>
             </div>
         </div>
@@ -180,7 +213,7 @@ const Stack = props => {
                 let { id: itemId } = item;
                 let _item = item?.item || item;
 
-                return cloneElement(_item, { key: itemId, id: itemId, stackId: id, stackIndex: index, onParentClose, item: _item, isFocused: focus === itemId });
+                return cloneElement(_item, { key: itemId, id: itemId, stackId: id, stackIndex: index, onParentClose, item: _item, isFocused: focus === itemId, sole: isSole });
             })}
         </div>
     </div>);

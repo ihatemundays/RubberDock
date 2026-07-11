@@ -1,3 +1,5 @@
+@use "sass:color";
+
 $layoutBackgroundColor: #0e0e0e;
 $layoutForegroundColor: #f3f3f3;
 $itemBackgroundColor: #212121;
@@ -9,6 +11,8 @@ $scrollbarForegroundColor: #313131;
 $dragAndDropColor: #313131;
 $dragAndDropBorder: $layoutForegroundColor dashed 3px;
 $focusedForegroundColor: #fb1;
+$tabHoverBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 6%);
+$tabFocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 4%);
 
 %expand {
   width: 100%;
@@ -18,6 +22,7 @@ $focusedForegroundColor: #fb1;
 %resizer {
   flex: 0 0 auto;
   user-select: none;
+  transition: background-color 0.15s ease;
   &:hover {
     background-color: $resizerColor;
   }
@@ -78,6 +83,28 @@ $focusedForegroundColor: #fb1;
   @extend %expand;
 }
 
+// Shared hit target for every clickable icon in the dock (tab actions, the
+// drop-bar carets, the stack orientation toggle) so they all look and feel
+// the same, instead of each spot styling its own <i> hover rule.
+.rubber-dock__icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: inherit;
+  line-height: 1;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: $focusedForegroundColor;
+  }
+  &--active {
+    color: $focusedForegroundColor;
+  }
+}
+
 @mixin scrollbar() {
   &::-webkit-scrollbar {
     background-color: $scrollbarBackgroundColor;
@@ -100,6 +127,42 @@ $focusedForegroundColor: #fb1;
   }
 }
 
+// Shared look for an individual item's tab; hstack/vstack differ only in
+// which edge gets the "focused" accent border, since one lays tabs out in a
+// row and the other in a column.
+@mixin itemTab($focusedAccent) {
+  @extend %expand;
+  background-color: $itemBackgroundColor;
+  border-radius: 4px;
+  display: flex;
+  flex: 0 0;
+  flex-basis: content;
+  line-height: 32px;
+  height: 32px;
+  max-height: 32px;
+  white-space: nowrap;
+  transition: opacity 0.5s ease-in, background-color 0.15s ease;
+  opacity: 0;
+  &.active {
+    opacity: 1;
+  }
+  &:hover {
+    background-color: $tabHoverBackgroundColor;
+  }
+  .rubber-dock__item-tab__button-bar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  &.focused {
+    background-color: $tabFocusedBackgroundColor;
+    box-shadow: $focusedAccent;
+    .rubber-dock__item-tab__label {
+      color: $focusedForegroundColor;
+    }
+  }
+}
+
 .rubber-dock {
   &__layout {
     @extend %grid;
@@ -108,14 +171,15 @@ $focusedForegroundColor: #fb1;
     color: $layoutForegroundColor;
     .layout-drop-bar {
       position: absolute;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px;
       background-color: $layoutBackgroundColor;
+      border-radius: 0 0 0 6px;
       opacity: 0.9;
       right: 0;
-      i:hover {
-        color: $focusedForegroundColor;
-      }
     }
-
   }
 
   &__row {
@@ -176,68 +240,30 @@ $focusedForegroundColor: #fb1;
     &__item-tabs {
       @include scrollbar();
       display: flex;
+      align-items: center;
       flex-direction: row;
       flex: 0 0 auto;
+      gap: 2px;
       overflow-x: scroll;
       overflow-y: hidden;
       >.rubber-dock__item-tab__button-bar {
-        @extend %expand;
+        flex: 0 0 auto;
+        margin-left: auto;
         display: flex;
-        align-content: center;
-        justify-content: flex-end;
-        opacity: 1;
-        i {
-          margin-top: 5px;
-          &:hover {
-            color: $focusedForegroundColor;
-          }
-        }
-      }
-      .rubber-dock__tab-divider {
-        width: 5px;
-        &.dragged {
-          @extend %dragAndDrop;
-          pointer-events: all;
-          &.hover {
-            border-color: $focusedForegroundColor;
-          }
-        }
+        align-items: center;
+        gap: 4px;
       }
       .rubber-dock__item-tab {
-        @extend %expand;
-        background-color: $itemBackgroundColor;
-        margin-right: 5px;
-        display: flex;
-        flex: 0 0;
-        flex-basis: content;
-        line-height: 32px;
-        height: 32px;
-        max-height: 32px;
-        white-space: nowrap;
-        transition: opacity 0.5s ease-in;
-        opacity: 0;
-        &.active {
-          opacity: 1;
-        }
+        @include itemTab(inset 0 2px 0 $focusedForegroundColor);
         .rubber-dock__item-tab__label {
           display: inline-block;
           padding: 0 10px 0 15px;
         }
-        .rubber-dock__item-tab__button-bar {
-          display: flex;
-          align-content: center;
-          justify-content: center;
-          opacity: 1;
-          i {
-            margin-top: 2px;
-            &:hover {
-              color: $focusedForegroundColor;
-            }
-          }
-        }
-        &.focused {
+        &--sole {
+          flex: 1 1 auto;
+          border-radius: 4px 4px 0 0;
           .rubber-dock__item-tab__label {
-            color: $focusedForegroundColor;
+            flex: 1 1 auto;
           }
         }
       }
@@ -263,6 +289,11 @@ $focusedForegroundColor: #fb1;
           opacity: 1;
           position: fixed;
           z-index: 1000;
+        }
+        &.popped-out {
+          display: block !important;
+          opacity: 1 !important;
+          position: static !important;
         }
         .rubber-dock__item__container {
           .rubber-dock__item__body {
@@ -283,70 +314,29 @@ $focusedForegroundColor: #fb1;
     &__item-tabs {
       @include scrollbar();
       display: flex;
+      align-items: center;
       flex-direction: column;
       flex: 0 0 auto;
+      gap: 2px;
       overflow-x: hidden;
       overflow-y: scroll;
       >.rubber-dock__item-tab__button-bar {
-        @extend %expand;
+        flex: 0 0 auto;
+        margin-top: auto;
         display: flex;
-        align-content: center;
-        justify-content: flex-end;
-        opacity: 1;
-        i {
-          margin-top: 5px;
-          &:hover {
-            color: $focusedForegroundColor;
-          }
-        }
-      }
-      .rubber-dock__tab-divider {
-        height: 5px;
-        &.dragged {
-          @extend %dragAndDrop;
-          pointer-events: all;
-          &.hover {
-            border-color: $focusedForegroundColor;
-          }
-        }
+        align-items: center;
+        gap: 4px;
       }
       .rubber-dock__item-tab {
-        @extend %expand;
-        background-color: $itemBackgroundColor;
-        margin-bottom: 5px;
-        display: flex;
-        flex: 0 0;
-        flex-basis: content;
-        line-height: 32px;
-        height: 32px;
-        max-height: 32px;
-        white-space: nowrap;
-        transition: opacity 0.5s ease-in;
-        opacity: 0;
-        &.active {
-          opacity: 1;
-        }
+        @include itemTab(inset 2px 0 0 $focusedForegroundColor);
         .rubber-dock__item-tab__label {
           width: 100%;
           display: inline-block;
           padding: 0 10px 0 15px;
         }
-        .rubber-dock__item-tab__button-bar {
-          display: flex;
-          align-content: center;
-          justify-content: center;
-          opacity: 1;
-          i {
-            margin-top: 2px;
-            &:hover {
-              color: $focusedForegroundColor;
-            }
-          }
-        }
-        &.focused {
-          .rubber-dock__item-tab__label {
-            color: $focusedForegroundColor;
-          }
+        &--sole {
+          flex: 1 1 auto;
+          border-radius: 4px 0 0 4px;
         }
       }
     }
@@ -371,6 +361,11 @@ $focusedForegroundColor: #fb1;
           opacity: 1;
           position: fixed;
           z-index: 1000;
+        }
+        &.popped-out {
+          display: block !important;
+          opacity: 1 !important;
+          position: static !important;
         }
         .rubber-dock__item__container {
           .rubber-dock__item__body {

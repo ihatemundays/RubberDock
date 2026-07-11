@@ -82,11 +82,11 @@ const LayoutInner = ({ children }) => {
 
     return (<div ref={ref} className="rubber-dock__layout">
         {cloneElement(child, { onBind })}
-        <span className="layout-drop-bar" style={{ display: dragging ? 'inline-block' : 'none' }}>
-            <i className="fas fa-caret-left fa-2x" onDragOver={onDragOver} onDrop={event => onDrop(event, GridGroupType.Row, GridPosition.Before)}>&nbsp;</i>
-            <i className="fas fa-caret-right fa-2x" onDragOver={onDragOver} onDrop={event => onDrop(event, GridGroupType.Row, GridPosition.After)}>&nbsp;</i>
-            <i className="fas fa-caret-up fa-2x" onDragOver={onDragOver} onDrop={event => onDrop(event, GridGroupType.Column, GridPosition.Before)}>&nbsp;</i>
-            <i className="fas fa-caret-down fa-2x" onDragOver={onDragOver} onDrop={event => onDrop(event, GridGroupType.Column, GridPosition.After)}>&nbsp;</i>
+        <span className="layout-drop-bar" style={{ display: dragging ? 'flex' : 'none' }}>
+            <i className="fas fa-caret-left fa-2x rubber-dock__icon-button" onDragOver={onDragOver} onDrop={event => onDrop(event, GridGroupType.Row, GridPosition.Before)} />
+            <i className="fas fa-caret-right fa-2x rubber-dock__icon-button" onDragOver={onDragOver} onDrop={event => onDrop(event, GridGroupType.Row, GridPosition.After)} />
+            <i className="fas fa-caret-up fa-2x rubber-dock__icon-button" onDragOver={onDragOver} onDrop={event => onDrop(event, GridGroupType.Column, GridPosition.Before)} />
+            <i className="fas fa-caret-down fa-2x rubber-dock__icon-button" onDragOver={onDragOver} onDrop={event => onDrop(event, GridGroupType.Column, GridPosition.After)} />
         </span>
     </div>);
 };
