@@ -271,7 +271,7 @@ const Stack = props => {
             </div>
             {lockedOrientation || (<div className="rubber-dock__item-tab__button-bar">
                 <div>
-                    <i className="fas fa-table-columns fa-lg rubber-dock__icon-button" title="Toggle orientation" onClick={() => setVertical(!vertical)} />
+                    <i className={`fas fa-table-columns fa-lg rubber-dock__icon-button ${vertical ? 'fa-rotate-270' : ''}`} title="Toggle orientation" onClick={() => setVertical(!vertical)} />
                 </div>
             </div>)}
         </div>
