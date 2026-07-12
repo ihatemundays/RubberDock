@@ -64,21 +64,17 @@ const ItemTab = ({
         <div className="rubber-dock__item-tab__label" onClick={() => store.focusItem(stackId, id)}>
             {children}
         </div>
-        {(isFocused && (
-            <div className="rubber-dock__item-tab__button-bar">
-                {poppedOut ? (
-                    <i className="fas fa-arrow-left rubber-dock__icon-button" title="Dock" onClick={() => store.dockItem(id)} />
-                ) : (<>
-                    {hasFullscreen && <i className={cx('fas', isMonitorFullscreen ? 'fa-compress' : 'fa-expand', 'rubber-dock__icon-button')} title="Full screen" onClick={toggleMonitorFullscreen} />}
-                    {hasPopOut && <i className="fas fa-up-right-from-square rubber-dock__icon-button" title="Pop out" onClick={() => store.popOutItem(id)} />}
-                    {hasMaximize && <i className={cx('far', isFullscreen ? 'fa-window-restore' : 'fa-window-maximize', 'rubber-dock__icon-button')} title="Maximize" onClick={() => store.toggleItemFullscreen(id)} />}
-                </>)}
-                {hasClose && <i className="far fa-window-close rubber-dock__icon-button" title="Close" onClick={() => store.deregisterItem(stackId, id)} />}
-            </div>)) || (
-            <div className="rubber-dock__item-tab__button-bar">
-                {hasClose && <i className="far fa-window-close rubber-dock__icon-button" title="Close" onClick={() => store.deregisterItem(stackId, id)} />}
-            </div>)}
-        </div>);
+        <div className="rubber-dock__item-tab__button-bar">
+            {poppedOut ? (
+                <i className="fas fa-arrow-left rubber-dock__icon-button rubber-dock__item-tab__button-bar__icon--focused-only" title="Dock" onClick={() => store.dockItem(id)} />
+            ) : (<>
+                {hasFullscreen && <i className={cx('fas', isMonitorFullscreen ? 'fa-compress' : 'fa-expand', 'rubber-dock__icon-button', 'rubber-dock__item-tab__button-bar__icon--focused-only')} title="Full screen" onClick={toggleMonitorFullscreen} />}
+                {hasPopOut && <i className="fas fa-up-right-from-square rubber-dock__icon-button rubber-dock__item-tab__button-bar__icon--focused-only" title="Pop out" onClick={() => store.popOutItem(id)} />}
+                {hasMaximize && <i className={cx('far', isFullscreen ? 'fa-window-restore' : 'fa-window-maximize', 'rubber-dock__icon-button', 'rubber-dock__item-tab__button-bar__icon--focused-only')} title="Maximize" onClick={() => store.toggleItemFullscreen(id)} />}
+            </>)}
+            {hasClose && <i className="far fa-window-close rubber-dock__icon-button" title="Close" onClick={() => store.deregisterItem(stackId, id)} />}
+        </div>
+    </div>);
 };
 
 export default ItemTab;

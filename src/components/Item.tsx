@@ -22,6 +22,20 @@ const Item = props => {
 
     const toggleItemFullscreen = () => store.toggleItemFullscreen(id);
 
+    useEffect(() => {
+        if (!isFullscreen || poppedOut) {
+            return;
+        }
+
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                store.toggleItemFullscreen(id);
+            }
+        };
+        document.addEventListener('keydown', onKeyDown);
+        return () => document.removeEventListener('keydown', onKeyDown);
+    }, [isFullscreen, poppedOut, id, store]);
+
     const tabLabel = typeof item?.props?.tab === 'string' ? item.props.tab : 'Window';
     const popoutContainer = usePopoutWindow(!!poppedOut, tabLabel, () => store.dockItem(id));
 
@@ -33,8 +47,7 @@ const Item = props => {
         id={itemElementId(id)}
         ref={ref}
         className={cx('rubber-dock__item', isActive && 'active', isFullscreen && !poppedOut && 'fullscreen', isFocused && 'focused', poppedOut && 'popped-out')}
-        {...(poppedOut || sole ? {} : { role: 'tabpanel', 'aria-labelledby': tabElementId(id), tabIndex: 0 })}
-    >
+        {...(poppedOut || sole ? {} : { role: 'tabpanel', 'aria-labelledby': tabElementId(id), tabIndex: 0 })}>
         {isFullscreen && !poppedOut ? (
             <div className="rubber-dock__item__maximize-bar">
                 <div className="rubber-dock__item__maximize-bar__label">{tab}</div>
@@ -47,6 +60,7 @@ const Item = props => {
                     if (typeof child.type === 'function' && isValidElement(child)) {
                         return cloneElement(child, childProps);
                     }
+
                     return child;
                 })}
             </div>

@@ -157,6 +157,15 @@ $tabUnfocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: -4%
     align-items: center;
     gap: 2px;
   }
+  // Hidden until focused by default; vstack overrides this (at the same
+  // selector depth, so specificity ties and source order decides) to reserve
+  // the space instead of hiding it, so selecting a tab doesn't resize the list.
+  .rubber-dock__item-tab__button-bar__icon--focused-only {
+    display: none;
+  }
+  &.focused .rubber-dock__item-tab__button-bar__icon--focused-only {
+    display: inline-flex;
+  }
   &.focused {
     background-color: $tabFocusedBackgroundColor;
     box-shadow: $focusedAccent;
@@ -436,6 +445,19 @@ $tabUnfocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: -4%
         &.active:not(.focused) {
           background-color: $tabUnfocusedBackgroundColor;
           color: $unfocusedForegroundColor;
+        }
+        // A vertical stack sizes its tab list to its widest tab, so hiding
+        // unfocused icons with `display: none` would shrink/grow the whole
+        // list on every selection change. Keep them in flow but invisible
+        // instead, so every tab reserves the full button bar's width.
+        .rubber-dock__item-tab__button-bar__icon--focused-only {
+          display: inline-flex;
+          visibility: hidden;
+          pointer-events: none;
+        }
+        &.focused .rubber-dock__item-tab__button-bar__icon--focused-only {
+          visibility: visible;
+          pointer-events: auto;
         }
         .rubber-dock__item-tab__label {
           margin: auto;

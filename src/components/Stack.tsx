@@ -10,7 +10,8 @@ const Stack = props => {
         id,
         onClose: onParentClose,
         onDrop: onParentDrop,
-        vertical: _vertical = false
+        vertical: _vertical = false,
+        lockedOrientation = false
     } = props;
 
     const store = useDockStore();
@@ -268,11 +269,11 @@ const Stack = props => {
                     </span>);
                 })}
             </div>
-            <div className="rubber-dock__item-tab__button-bar">
+            {lockedOrientation || (<div className="rubber-dock__item-tab__button-bar">
                 <div>
                     <i className="fas fa-table-columns fa-lg rubber-dock__icon-button" title="Toggle orientation" onClick={() => setVertical(!vertical)} />
                 </div>
-            </div>
+            </div>)}
         </div>
         <div ref={itemsRef} className={`${className}__items`} style={{ height: `calc(100% - ${tabsHeight}px)` }} onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}>
             <span className={stackDraggedClass}></span>

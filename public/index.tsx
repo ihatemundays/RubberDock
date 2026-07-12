@@ -69,7 +69,7 @@ createRoot(document.getElementById('root')!).render(<StrictMode>
                 </Stack>
             </Column>
             <Column>
-                <Stack vertical={true}>
+                <Stack vertical={true} lockedOrientation={true}>
                     <Item tab="Outline">
                         <ul className="example-file-list">
                             <li>Layout</li>
