@@ -9,7 +9,7 @@ export default defineConfig(({ command }) => ({
   base: command === 'build' ? '/RubberDock/' : '/',
   plugins: [react()],
   build: {
-    outDir: '../demo-dist',
+    outDir: '../docs',
     emptyOutDir: true,
   },
 }));

@@ -1,21 +1,25 @@
 name: Deploy demo
 
+# Builds the public/ sandbox and commits the static output straight into
+# docs/ on main. GitHub Pages is already configured to serve this repo's
+# main branch, so this only needs "Settings > Pages > Branch: main, Folder:
+# /docs" - no GitHub Actions Pages permissions/environment to wire up.
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,17 +29,11 @@ jobs:
           cache: yarn
       - run: yarn install --frozen-lockfile
       - run: yarn build:demo
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: demo-dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - run: touch docs/.nojekyll
+      - name: Commit demo output
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs
+          git diff --cached --quiet && echo "Demo unchanged" || git commit -m "Update demo site [skip ci]"
+          git push
