@@ -1,6 +1,6 @@
 {
   "name": "rubber-dock",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A simple, powerful dock system made for React",
   "type": "module",
   "main": "dist/index.js",
