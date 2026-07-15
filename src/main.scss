@@ -15,7 +15,6 @@ $unfocusedForegroundColor: #6c6c6c;
 $tabHoverBackgroundColor: #3c3c3c;
 $tabFocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 4%);
 $tabUnfocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: -4%);
-$layoutEdgeZoneSize: 48px;
 
 %expand {
   width: 100%;
@@ -211,25 +210,6 @@ $layoutEdgeZoneSize: 48px;
     position: relative;
     background-color: $layoutBackgroundColor;
     color: $layoutForegroundColor;
-
-    &__edge-zone {
-      position: absolute;
-      z-index: 10;
-      &--top, &--bottom {
-        left: 0;
-        right: 0;
-        height: $layoutEdgeZoneSize;
-      }
-      &--left, &--right {
-        top: $layoutEdgeZoneSize;
-        bottom: $layoutEdgeZoneSize;
-        width: $layoutEdgeZoneSize;
-      }
-      &--top { top: 0; }
-      &--bottom { bottom: 0; }
-      &--left { left: 0; }
-      &--right { right: 0; }
-    }
   }
 
   &__row {

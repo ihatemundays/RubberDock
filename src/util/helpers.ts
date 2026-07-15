@@ -3,7 +3,8 @@ export const getChildren = (initialChildren) => {
 
     return children.map(item => ({
         item,
-        id: crypto.randomUUID()
+        id: crypto.randomUUID(),
+        flex: item.props?.flex ?? 1
     }));
 };
 

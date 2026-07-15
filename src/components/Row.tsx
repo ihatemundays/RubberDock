@@ -7,7 +7,7 @@ import Column from "./Column";
 import Stack from "./Stack";
 
 const Row = props => {
-    const { onClose: onParentClose, onBind } = props;
+    const { onClose: onParentClose, onBind, style } = props;
     const { items } = useDockState();
     const [children, setChildren] = useState(() => getChildren(props.children));
 
@@ -19,6 +19,7 @@ const Row = props => {
             }
             const next = [...prev];
             next.splice(index, 1);
+
             return next;
         });
     };
@@ -46,11 +47,15 @@ const Row = props => {
             item: itemIds.length === 1
                 ? cloneElement(items[itemIds[0]].item)
                 : (<Stack>{itemIds.map(itemId => cloneElement(items[itemId].item))}</Stack>),
-            id: crypto.randomUUID()
+            id: crypto.randomUUID(),
+            flex: 1
         };
 
         let next = [...children];
         if (gridGroupType === GridGroupType.Column) {
+            // The new split replaces the existing slot, so it inherits that
+            // slot's flex weight instead of resetting it back to 1.
+            item.flex = next[index].flex ?? 1;
             const childItem = cloneElement(next[index].item);
             item.item = gridPosition === GridPosition.Before ? (<Column>
                 {item.item}
@@ -107,10 +112,10 @@ const Row = props => {
         return null;
     }
 
-    return (<div className="rubber-dock__row">
+    return (<div className="rubber-dock__row" style={style}>
         {children.map((child, index) => {
             return (<GridGroup
-                key={child.id} id={child.id} item={child.item}
+                key={child.id} id={child.id} item={child.item} flex={child.flex}
                 onClose={() => onClose(child.id)}
                 onDrop={(itemIds, gridGroupType, gridPosition) => onDrop(child.id, itemIds, gridGroupType, gridPosition)}
                 onResize={index < children.length - 1 ? onResize : null} />);

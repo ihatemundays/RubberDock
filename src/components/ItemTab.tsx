@@ -61,8 +61,7 @@ const ItemTab = ({
         id={tabElementId(id)}
         className={cx('rubber-dock__item-tab', sole && 'rubber-dock__item-tab--sole', isActive && 'active', isFocused && 'focused')}
         onDragStart={onDragStart} onDragOver={event => event.preventDefault()} onDragEnd={onDragEnd} draggable={true}
-        {...(sole ? {} : { role: 'tab', 'aria-selected': isFocused, 'aria-controls': itemElementId(id), tabIndex: isFocused ? 0 : -1 })}
-    >
+        {...(sole ? {} : { role: 'tab', 'aria-selected': isFocused, 'aria-controls': itemElementId(id), tabIndex: isFocused ? 0 : -1 })}>
         <div className="rubber-dock__item-tab__label" onClick={() => store.focusItem(stackId, id)}>
             {children}
         </div>

@@ -33,7 +33,7 @@ createRoot(document.getElementById('root')!).render(<StrictMode>
                 </Stack>
             </Column>
             <Column>
-                <Stack>
+                <Stack flex={2.5}>
                     <Item tab="index.ts">
                         <pre className="example-code">{`import { Layout, Row, Column, Stack, Item } from 'rubber-dock';`}</pre>
                     </Item>
@@ -68,9 +68,9 @@ createRoot(document.getElementById('root')!).render(<StrictMode>
                     </Item>
                 </Stack>
             </Column>
-            <Column>
+            <Column flex={2}>
                 <Stack vertical={true} lockedOrientation={true}>
-                    <Item tab="Outline">
+                    <Item tab="Outline" flex={3}>
                         <ul className="example-file-list">
                             <li>Layout</li>
                             <li>Row</li>

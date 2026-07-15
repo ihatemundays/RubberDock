@@ -73,8 +73,7 @@ const Item = props => {
             <div
                 id={itemElementId(id)}
                 className={cx('rubber-dock__item', isActive && 'active', isFocused && 'focused')}
-                {...(sole ? {} : { role: 'tabpanel', 'aria-labelledby': tabElementId(id), tabIndex: 0 })}
-            >
+                {...(sole ? {} : { role: 'tabpanel', 'aria-labelledby': tabElementId(id), tabIndex: 0 })}>
                 <div className="rubber-dock__item__container">
                     <div className="rubber-dock__item__body rubber-dock__item__body--popped-out" title="Dock" onClick={() => store.dockItem(id)}>
                         <i className="fas fa-up-right-from-square" />

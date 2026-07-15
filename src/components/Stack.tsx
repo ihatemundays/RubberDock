@@ -12,7 +12,8 @@ const Stack = props => {
         onClose: onParentClose,
         onDrop: onParentDrop,
         vertical: _vertical = false,
-        lockedOrientation = false
+        lockedOrientation = false,
+        style
     } = props;
 
     const store = useDockStore();
@@ -259,7 +260,7 @@ const Stack = props => {
         return null;
     }
 
-    return (<div className={cx(className, 'active')}>
+    return (<div className={cx(className, 'active')} style={style}>
         <div ref={tabsRef} className={`${className}__item-tabs`}>
             <div {...(isSole ? {} : { role: 'tablist', 'aria-orientation': vertical ? 'vertical' : 'horizontal', onKeyDown: onTabsKeyDown })}
                  className={`${className}__item-tabs__list`} onDragOver={onTabListDragOver} onDrop={onTabListDrop}>
