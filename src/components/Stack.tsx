@@ -2,6 +2,7 @@ import { cloneElement, useEffect, useRef, useState } from "react";
 import ItemTab from "./ItemTab";
 import { useDockState, useDockStore } from "../store/DockContext";
 import { GridGroupType, GridPosition, cx, tabElementId } from "../util/common";
+import { resolveDraggedItemIds } from "../util/helpers";
 import { useRegisterStack } from "../hooks/useRegisterStack";
 
 const Stack = props => {
@@ -92,7 +93,7 @@ const Stack = props => {
         const stackId = event.dataTransfer.getData('stackId');
         const itemId = event.dataTransfer.getData('id');
 
-        if (type !== 'item') {
+        if (type !== 'item' && type !== 'stack') {
             return;
         }
 
@@ -100,36 +101,42 @@ const Stack = props => {
         // below), so dropping it back onto its own body is the item being
         // dropped onto itself: it would clone the item into a new split
         // panel and then immediately deregister the original, making it look
-        // like the item just vanished. Ignore that no-op drop.
-        if (isSole && stackId === id) {
+        // like the item just vanished. Dragging the whole stack onto its own
+        // body is the same no-op for the same reason, regardless of size.
+        if (stackId === id && (type === 'stack' || isSole)) {
+            return;
+        }
+
+        const itemIds = resolveDraggedItemIds(type, stackId, itemId, stacks);
+        if (itemIds.length === 0) {
             return;
         }
 
         switch (stackDraggedClass) {
             case 'dragged-before-column':
-                if (!onParentDrop(itemId, GridGroupType.Column, GridPosition.Before)) {
+                if (!onParentDrop(itemIds, GridGroupType.Column, GridPosition.Before)) {
                     return;
                 }
                 break;
             case 'dragged-after-column':
-                if (!onParentDrop(itemId, GridGroupType.Column, GridPosition.After)) {
+                if (!onParentDrop(itemIds, GridGroupType.Column, GridPosition.After)) {
                     return;
                 }
                 break;
             case 'dragged-before-row':
-                if (!onParentDrop(itemId, GridGroupType.Row, GridPosition.Before)) {
+                if (!onParentDrop(itemIds, GridGroupType.Row, GridPosition.Before)) {
                     return;
                 }
                 break;
             case 'dragged-after-row':
-                if (!onParentDrop(itemId, GridGroupType.Row, GridPosition.After)) {
+                if (!onParentDrop(itemIds, GridGroupType.Row, GridPosition.After)) {
                     return;
                 }
                 break;
         }
 
         if (event.dataTransfer.effectAllowed === 'move') {
-            store.deregisterItem(stackId, itemId);
+            itemIds.forEach(draggedId => store.deregisterItem(stackId, draggedId));
         }
     };
 
@@ -176,21 +183,31 @@ const Stack = props => {
         const stackId = event.dataTransfer.getData('stackId');
         const itemId = event.dataTransfer.getData('id');
 
-        if (type !== 'item') {
+        if (type !== 'item' && type !== 'stack') {
             return;
         }
 
-        // Dropping a tab right next to its own current slot doesn't change
-        // its order - skip it instead of re-mounting the item under a new id.
-        const sourceIndex = list.findIndex(x => x.id === itemId);
-        if (sourceIndex !== -1 && (position === sourceIndex || position === sourceIndex + 1)) {
+        if (type === 'item') {
+            // Dropping a tab right next to its own current slot doesn't change
+            // its order - skip it instead of re-mounting the item under a new id.
+            const sourceIndex = list.findIndex(x => x.id === itemId);
+            if (sourceIndex !== -1 && (position === sourceIndex || position === sourceIndex + 1)) {
+                return;
+            }
+        } else if (stackId === id) {
+            // A whole stack dropped into its own tab list is already there.
             return;
         }
 
-        store.dropItem(id, itemId, crypto.randomUUID(), position);
+        const itemIds = resolveDraggedItemIds(type, stackId, itemId, stacks);
+        if (itemIds.length === 0) {
+            return;
+        }
+
+        itemIds.forEach((draggedId, index) => store.dropItem(id, draggedId, crypto.randomUUID(), position + index));
 
         if (event.dataTransfer.effectAllowed === 'move') {
-            store.deregisterItem(stackId, itemId);
+            itemIds.forEach(draggedId => store.deregisterItem(stackId, draggedId));
         }
     };
 

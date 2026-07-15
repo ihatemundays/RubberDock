@@ -15,6 +15,7 @@ $unfocusedForegroundColor: #6c6c6c;
 $tabHoverBackgroundColor: #3c3c3c;
 $tabFocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: 4%);
 $tabUnfocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: -4%);
+$layoutEdgeZoneSize: 48px;
 
 %expand {
   width: 100%;
@@ -210,16 +211,24 @@ $tabUnfocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: -4%
     position: relative;
     background-color: $layoutBackgroundColor;
     color: $layoutForegroundColor;
-    .layout-drop-bar {
+
+    &__edge-zone {
       position: absolute;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 6px;
-      background-color: $layoutBackgroundColor;
-      border-radius: 0 0 0 6px;
-      opacity: 0.9;
-      right: 0;
+      z-index: 10;
+      &--top, &--bottom {
+        left: 0;
+        right: 0;
+        height: $layoutEdgeZoneSize;
+      }
+      &--left, &--right {
+        top: $layoutEdgeZoneSize;
+        bottom: $layoutEdgeZoneSize;
+        width: $layoutEdgeZoneSize;
+      }
+      &--top { top: 0; }
+      &--bottom { bottom: 0; }
+      &--left { left: 0; }
+      &--right { right: 0; }
     }
   }
 
@@ -322,7 +331,7 @@ $tabUnfocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: -4%
     }
   }
 
-  &__hstack, &__vstack {
+  &__hstack, &__vstack, &__layout {
     .dragged-before-column:after {
       @extend %dragAndDrop;
       @extend %topSide;

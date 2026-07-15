@@ -1,4 +1,12 @@
+// The browser's default 8px body margin would leave a dead strip around the
+// layout that the edge-of-window drop zones can never reach - reset it so
+// the layout spans truly edge-to-edge.
+html, body, #root {
+  height: 100%;
+}
+
 body {
+  margin: 0;
   background-color: #0e0e0e;
 }
 

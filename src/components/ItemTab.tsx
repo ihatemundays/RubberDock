@@ -43,10 +43,12 @@ const ItemTab = ({
 
     const onDragStart = event => {
         store.inDrag();
-        event.dataTransfer.setData('type', 'item');
+        // Ctrl drags the tab's whole stack instead of just this tab; alt
+        // leaves the source in place (copy) instead of removing it (move).
+        event.dataTransfer.setData('type', event.ctrlKey ? 'stack' : 'item');
         event.dataTransfer.setData('stackId', stackId);
         event.dataTransfer.setData('id', id);
-        event.dataTransfer.effectAllowed = event.ctrlKey ? 'copy' : 'move';
+        event.dataTransfer.effectAllowed = event.altKey ? 'copy' : 'move';
     };
 
     // Might trigger twice, but catches most possible outcomes.

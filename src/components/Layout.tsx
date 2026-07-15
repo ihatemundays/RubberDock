@@ -1,9 +1,10 @@
-import { cloneElement, FunctionComponent, ReactElement, useRef, useState } from "react";
+import { cloneElement, FunctionComponent, ReactElement, useEffect, useRef, useState } from "react";
 import { DockStore } from "../store/DockStore";
 import { DockContext, useDockState, useDockStore } from "../store/DockContext";
 import Row from "./Row";
 import Column from "./Column";
 import { GridGroupType, GridPosition } from "../util/common";
+import { resolveDraggedItemIds } from "../util/helpers";
 
 type LayoutProps = {
     children: ReactElement;
@@ -22,72 +23,107 @@ const Layout: FunctionComponent<LayoutProps> = ({ children }) => {
 
 const LayoutInner = ({ children }) => {
     const store = useDockStore();
-    const { dragging } = useDockState();
+    const { dragging, stacks } = useDockState();
     const ref = useRef<HTMLDivElement>(null);
 
     const [child, setChild] = useState(children);
     const [childRef, setChildRef] = useState(null);
     const [onDropObject, setOnDropObject] = useState(null);
+    const [edgeDraggedClass, setEdgeDraggedClass] = useState('');
 
-    const onDragOver = event => {
+    // A drag can end anywhere (or nowhere, if the user hits Escape), so the
+    // global drag flag - not a local dragleave - is the only reliable signal
+    // that the edge-drop indicator should clear.
+    useEffect(() => {
+        if (!dragging) {
+            setEdgeDraggedClass('');
+        }
+    }, [dragging]);
+
+    const onEdgeDragOver = (event, className) => {
         event.stopPropagation();
         event.preventDefault();
+        setEdgeDraggedClass(className);
+    };
+
+    const onEdgeDragLeave = () => {
+        setEdgeDraggedClass('');
     };
 
     const onBind = childRef => {
         setChildRef(childRef);
 
         if (onDropObject !== null) {
-            const { params, stackId, itemId, effectAllowed } = onDropObject;
+            const { params, stackId, itemIds, effectAllowed } = onDropObject;
 
             if (childRef.onDrop.apply(childRef, params)) {
                 if (effectAllowed === 'move') {
-                    store.deregisterItem(stackId, itemId);
+                    itemIds.forEach(itemId => store.deregisterItem(stackId, itemId));
                 }
             }
         }
     };
 
     const onDrop = (event, gridGroupType: GridGroupType, gridPosition: GridPosition) => {
+        setEdgeDraggedClass('');
+
         const type = event.dataTransfer.getData('type');
         const stackId = event.dataTransfer.getData('stackId');
         const itemId = event.dataTransfer.getData('id');
 
-        if (type !== 'item') {
+        if (type !== 'item' && type !== 'stack') {
+            return;
+        }
+
+        const itemIds = resolveDraggedItemIds(type, stackId, itemId, stacks);
+        if (itemIds.length === 0) {
             return;
         }
 
         if (child.type === Column && gridGroupType === GridGroupType.Row) {
             setChild((<Row>{child}</Row>));
             setOnDropObject({
-                params: [null, itemId, gridGroupType, gridPosition],
+                params: [null, itemIds, gridGroupType, gridPosition],
                 stackId,
-                itemId,
+                itemIds,
                 effectAllowed: event.dataTransfer.effectAllowed
             });
         } else if (child.type === Row && gridGroupType === GridGroupType.Column) {
             setChild((<Column>{child}</Column>));
             setOnDropObject({
-                params: [null, itemId, gridGroupType, gridPosition],
+                params: [null, itemIds, gridGroupType, gridPosition],
                 stackId,
-                itemId,
+                itemIds,
                 effectAllowed: event.dataTransfer.effectAllowed
             });
-        } else if (childRef.onDrop(null, itemId, gridGroupType, gridPosition)) {
+        } else if (childRef.onDrop(null, itemIds, gridGroupType, gridPosition)) {
             if (event.dataTransfer.effectAllowed === 'move') {
-                store.deregisterItem(stackId, itemId);
+                itemIds.forEach(itemId => store.deregisterItem(stackId, itemId));
             }
         }
     };
 
     return (<div ref={ref} className="rubber-dock__layout">
         {cloneElement(child, { onBind })}
-        <span className="layout-drop-bar" style={{ display: dragging ? 'flex' : 'none' }}>
-            <i className="fas fa-caret-left fa-2x rubber-dock__icon-button" onDragOver={onDragOver} onDrop={event => onDrop(event, GridGroupType.Row, GridPosition.Before)} />
-            <i className="fas fa-caret-right fa-2x rubber-dock__icon-button" onDragOver={onDragOver} onDrop={event => onDrop(event, GridGroupType.Row, GridPosition.After)} />
-            <i className="fas fa-caret-up fa-2x rubber-dock__icon-button" onDragOver={onDragOver} onDrop={event => onDrop(event, GridGroupType.Column, GridPosition.Before)} />
-            <i className="fas fa-caret-down fa-2x rubber-dock__icon-button" onDragOver={onDragOver} onDrop={event => onDrop(event, GridGroupType.Column, GridPosition.After)} />
-        </span>
+        {dragging && (<>
+            <span className={edgeDraggedClass}></span>
+            <div className="rubber-dock__layout__edge-zone rubber-dock__layout__edge-zone--top"
+                 onDragOver={event => onEdgeDragOver(event, 'dragged-before-column')}
+                 onDragLeave={onEdgeDragLeave}
+                 onDrop={event => onDrop(event, GridGroupType.Column, GridPosition.Before)} />
+            <div className="rubber-dock__layout__edge-zone rubber-dock__layout__edge-zone--bottom"
+                 onDragOver={event => onEdgeDragOver(event, 'dragged-after-column')}
+                 onDragLeave={onEdgeDragLeave}
+                 onDrop={event => onDrop(event, GridGroupType.Column, GridPosition.After)} />
+            <div className="rubber-dock__layout__edge-zone rubber-dock__layout__edge-zone--left"
+                 onDragOver={event => onEdgeDragOver(event, 'dragged-before-row')}
+                 onDragLeave={onEdgeDragLeave}
+                 onDrop={event => onDrop(event, GridGroupType.Row, GridPosition.Before)} />
+            <div className="rubber-dock__layout__edge-zone rubber-dock__layout__edge-zone--right"
+                 onDragOver={event => onEdgeDragOver(event, 'dragged-after-row')}
+                 onDragLeave={onEdgeDragLeave}
+                 onDrop={event => onDrop(event, GridGroupType.Row, GridPosition.After)} />
+        </>)}
     </div>);
 };
 

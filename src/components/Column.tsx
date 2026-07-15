@@ -4,6 +4,7 @@ import { useDockState } from "../store/DockContext";
 import { GridGroupType, GridPosition } from "../util/common";
 import { getChildren } from "../util/helpers";
 import Row from "./Row";
+import Stack from "./Stack";
 
 const Column = props => {
     const { onClose: onParentClose, onBind } = props;
@@ -25,7 +26,7 @@ const Column = props => {
     // stateRef lets onBind's caller (Layout) always reach the latest onDrop, even
     // though onBind itself is only invoked once on mount.
     const stateRef = useRef<any>(null);
-    const onDrop = (childId, itemId, gridGroupType: GridGroupType, gridPosition: GridPosition) => {
+    const onDrop = (childId, itemIds: string[], gridGroupType: GridGroupType, gridPosition: GridPosition) => {
         const { children, items } = stateRef.current;
         let index = childId !== null ?
             children.findIndex(x => x.id === childId) :
@@ -35,12 +36,17 @@ const Column = props => {
             return false;
         }
 
-        if (!(itemId in items)) {
+        if (itemIds.length === 0 || itemIds.some(itemId => !(itemId in items))) {
             return false;
         }
 
         let item: any = {
-            item: cloneElement(items[itemId].item),
+            // A single dragged tab becomes a bare item (GridGroup wraps it in
+            // its own Stack); a whole dragged stack is rebuilt as a Stack here
+            // so all its tabs land together in the new split.
+            item: itemIds.length === 1
+                ? cloneElement(items[itemIds[0]].item)
+                : (<Stack>{itemIds.map(itemId => cloneElement(items[itemId].item))}</Stack>),
             id: crypto.randomUUID()
         };
 
@@ -107,7 +113,7 @@ const Column = props => {
             return (<GridGroup
                 key={child.id} id={child.id} item={child.item}
                 onClose={() => onClose(child.id)}
-                onDrop={(itemId, gridGroupType, gridPosition) => onDrop(child.id, itemId, gridGroupType, gridPosition)}
+                onDrop={(itemIds, gridGroupType, gridPosition) => onDrop(child.id, itemIds, gridGroupType, gridPosition)}
                 onResize={index < children.length - 1 ? onResize : null} />);
         })}
     </div>);
