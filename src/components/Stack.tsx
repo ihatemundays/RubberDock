@@ -5,6 +5,11 @@ import { GridGroupType, GridPosition, cx, tabElementId } from "../util/common";
 import { resolveDraggedItemIds } from "../util/helpers";
 import { useRegisterStack } from "../hooks/useRegisterStack";
 
+// How much of the stack body (as a fraction of width/height) is reserved for
+// joining the tab group, centered on the body. The remaining margin is where
+// dragging over the body indicates splitting off a new row/column instead.
+const CENTER_ZONE_RATIO = 0.5;
+
 const Stack = props => {
     let {
         children,
@@ -65,6 +70,18 @@ const Stack = props => {
         const { left, top, width, height } = (itemsRef.current as any).getBoundingClientRect();
         const [centerX, centerY] = [width / 2 + left, height / 2 + top];
         const [dx, dy] = [event.clientX - centerX, -(event.clientY - centerY)];
+
+        // The middle of the stack is reserved for joining this tab group -
+        // only once the pointer strays out into the surrounding margin does
+        // it indicate splitting off a new row/column, so tabbing takes
+        // priority over the edge zones for any drop that isn't clearly
+        // aimed at an edge.
+        if (Math.abs(dx) < width * CENTER_ZONE_RATIO / 2 && Math.abs(dy) < height * CENTER_ZONE_RATIO / 2) {
+            setStackDraggedClass('dragged-center');
+            event.preventDefault();
+            return;
+        }
+
         let theta = Math.atan2(dy, dx) * 180 / Math.PI;
         if (theta < 0) {
             theta += 360;
@@ -88,6 +105,15 @@ const Stack = props => {
     };
 
     const onDrop = event => {
+        // A center-zone drop joins this tab group (append after the last
+        // tab) rather than splitting off a new row/column - `dropTab` already
+        // has the self-drop no-op checks this needs.
+        if (stackDraggedClass === 'dragged-center') {
+            setStackDraggedClass('');
+            dropTab(event, list.length);
+            return;
+        }
+
         setStackDraggedClass('');
 
         const type = event.dataTransfer.getData('type');

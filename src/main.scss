@@ -312,6 +312,11 @@ $tabUnfocusedBackgroundColor: color.adjust($itemBackgroundColor, $lightness: -4%
   }
 
   &__hstack, &__vstack, &__layout {
+    .dragged-center:after {
+      @extend %dragAndDrop;
+      @extend %full;
+    }
+
     .dragged-before-column:after {
       @extend %dragAndDrop;
       @extend %topSide;
