@@ -80,7 +80,7 @@ const useTrack = (props) => {
         };
 
         let next = [...children];
-        if (type !== TrackType) {
+        if (trackType !== type) {
             const Track = ({children}: {children: ReactNode}) => {
                 if (trackType === TrackType.Column) {
                     return (<Column>{children}</Column>);
@@ -126,7 +126,7 @@ const useTrack = (props) => {
                 return (<MetaDock
                     key={child.id} id={child.id} item={child.item} flex={child.flex}
                     onClose={() => onClose(child.id)}
-                    onDrop={(itemIds: string[], TrackType: TrackType, gridPosition: GridPosition) => onDrop(child.id, itemIds, TrackType, gridPosition)}
+                    onDrop={(itemIds: string[], trackType: TrackType, gridPosition: GridPosition) => onDrop(child.id, itemIds, trackType, gridPosition)}
                     onResize={index < children.length - 1 ? onResize : null} />);
             })}
         </div>);

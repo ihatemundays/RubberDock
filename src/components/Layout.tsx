@@ -102,7 +102,7 @@ const LayoutInner = ({ children }) => {
         // MISMATCH - so this never remounts anything below either wrapper.
         const outerTrackType = isColumnRoot ? TrackType.Row : TrackType.Column;
         const targetRef = trackType === outerTrackType ? outerRef : innerRef;
-        if (!targetRef || !targetRef.onDrop(null, itemIds, TrackType, gridPosition)) {
+        if (!targetRef || !targetRef.onDrop(null, itemIds, trackType, gridPosition)) {
             return;
         }
 
