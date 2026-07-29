@@ -1,10 +1,10 @@
-import { cloneElement, FunctionComponent, ReactElement, useEffect, useRef, useState } from "react";
-import { DockStore } from "../store/DockStore";
-import { DockContext, useDockState, useDockStore } from "../store/DockContext";
+import {cloneElement, FunctionComponent, ReactElement, useEffect, useRef, useState} from "react";
+import {DockStore} from "../store/DockStore";
+import {DockContext, useDockState, useDockStore} from "../store/DockContext";
 import Row from "./Row";
 import Column from "./Column";
-import { GridGroupType, GridPosition } from "../util/common";
-import { resolveDraggedItemIds } from "../util/helpers";
+import {GridPosition, TrackType} from "../util/common";
+import {resolveDraggedItemIds} from "../util/helpers";
 
 type LayoutProps = {
     children: ReactElement;
@@ -67,19 +67,19 @@ const LayoutInner = ({ children }) => {
     // Which edge (if any) the pointer is currently within EDGE_ZONE_SIZE of,
     // measured against the layout's own bounding box rather than a covering
     // element - see the EDGE_ZONE_SIZE comment above.
-    const edgeAt = (event): [GridGroupType, GridPosition, string] | null => {
+    const edgeAt = (event): [TrackType, GridPosition, string] | null => {
         const rect = ref.current.getBoundingClientRect();
-        const distances: [number, GridGroupType, GridPosition, string][] = [
-            [event.clientY - rect.top, GridGroupType.Column, GridPosition.Before, 'dragged-before-column'],
-            [rect.bottom - event.clientY, GridGroupType.Column, GridPosition.After, 'dragged-after-column'],
-            [event.clientX - rect.left, GridGroupType.Row, GridPosition.Before, 'dragged-before-row'],
-            [rect.right - event.clientX, GridGroupType.Row, GridPosition.After, 'dragged-after-row']
+        const distances: [number, TrackType, GridPosition, string][] = [
+            [event.clientY - rect.top, TrackType.Column, GridPosition.Before, 'dragged-before-column'],
+            [rect.bottom - event.clientY, TrackType.Column, GridPosition.After, 'dragged-after-column'],
+            [event.clientX - rect.left, TrackType.Row, GridPosition.Before, 'dragged-before-row'],
+            [rect.right - event.clientX, TrackType.Row, GridPosition.After, 'dragged-after-row']
         ];
-        const [dist, gridGroupType, gridPosition, className] = distances.reduce((a, b) => a[0] <= b[0] ? a : b);
-        return dist <= EDGE_ZONE_SIZE ? [gridGroupType, gridPosition, className] : null;
+        const [dist, trackType, gridPosition, className] = distances.reduce((a, b) => a[0] <= b[0] ? a : b);
+        return dist <= EDGE_ZONE_SIZE ? [trackType, gridPosition, className] : null;
     };
 
-    const onDrop = (event, gridGroupType: GridGroupType, gridPosition: GridPosition) => {
+    const onDrop = (event, trackType: TrackType, gridPosition: GridPosition) => {
         setEdgeDraggedClass('');
 
         const type = event.dataTransfer.getData('type');
@@ -100,9 +100,9 @@ const LayoutInner = ({ children }) => {
         // left untouched. Neither call can hit that wrapper's "wrap in a
         // nested Row/Column" branch, since that only triggers on an axis
         // MISMATCH - so this never remounts anything below either wrapper.
-        const outerGridGroupType = isColumnRoot ? GridGroupType.Row : GridGroupType.Column;
-        const targetRef = gridGroupType === outerGridGroupType ? outerRef : innerRef;
-        if (!targetRef || !targetRef.onDrop(null, itemIds, gridGroupType, gridPosition)) {
+        const outerTrackType = isColumnRoot ? TrackType.Row : TrackType.Column;
+        const targetRef = trackType === outerTrackType ? outerRef : innerRef;
+        if (!targetRef || !targetRef.onDrop(null, itemIds, TrackType, gridPosition)) {
             return;
         }
 

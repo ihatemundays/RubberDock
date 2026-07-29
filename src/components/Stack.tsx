@@ -1,7 +1,7 @@
 import { cloneElement, useEffect, useRef, useState } from "react";
 import ItemTab from "./ItemTab";
 import { useDockState, useDockStore } from "../store/DockContext";
-import { GridGroupType, GridPosition, cx, tabElementId } from "../util/common";
+import { TrackType, GridPosition, cx, tabElementId } from "../util/common";
 import { resolveDraggedItemIds } from "../util/helpers";
 import { useRegisterStack } from "../hooks/useRegisterStack";
 
@@ -141,22 +141,22 @@ const Stack = props => {
 
         switch (stackDraggedClass) {
             case 'dragged-before-column':
-                if (!onParentDrop(itemIds, GridGroupType.Column, GridPosition.Before)) {
+                if (!onParentDrop(itemIds, TrackType.Column, GridPosition.Before)) {
                     return;
                 }
                 break;
             case 'dragged-after-column':
-                if (!onParentDrop(itemIds, GridGroupType.Column, GridPosition.After)) {
+                if (!onParentDrop(itemIds, TrackType.Column, GridPosition.After)) {
                     return;
                 }
                 break;
             case 'dragged-before-row':
-                if (!onParentDrop(itemIds, GridGroupType.Row, GridPosition.Before)) {
+                if (!onParentDrop(itemIds, TrackType.Row, GridPosition.Before)) {
                     return;
                 }
                 break;
             case 'dragged-after-row':
-                if (!onParentDrop(itemIds, GridGroupType.Row, GridPosition.After)) {
+                if (!onParentDrop(itemIds, TrackType.Row, GridPosition.After)) {
                     return;
                 }
                 break;

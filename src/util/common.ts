@@ -1,13 +1,13 @@
-export enum GridGroupType {
+export enum TrackType {
     Column,
     Row
 }
 
-export const getGridGroupTypeClassName = (gridGroupType: GridGroupType) => {
-    switch (gridGroupType) {
-        case GridGroupType.Column:
+export const getTrackTypeClassName = (trackType: TrackType) => {
+    switch (trackType) {
+        case TrackType.Column:
             return "column";
-        case GridGroupType.Row:
+        case TrackType.Row:
         default:
             return "row";
     }

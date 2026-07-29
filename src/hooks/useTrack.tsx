@@ -1,11 +1,11 @@
 import {useDockState} from "../store/DockContext";
 import {cloneElement, ReactNode, useEffect, useRef, useState} from "react";
 import {getChildren} from "../util/helpers";
-import {getGridGroupTypeClassName, GridGroupType, GridPosition} from "../util/common";
+import {getTrackTypeClassName, TrackType, GridPosition} from "../util/common";
 import Column from "../components/Column";
 import Row from "../components/Row";
 import {Stack} from "../index";
-import GridGroup from "../components/GridGroup";
+import MetaDock from "../components/MetaDock";
 
 const useTrack = (props) => {
     const {type} = props;
@@ -54,7 +54,7 @@ const useTrack = (props) => {
 
     // stateRef lets onBind's caller (Layout) always reach the latest onDrop, even
     // though onBind itself is only invoked once on mount.
-    const onDrop = (childId: string, itemIds: string[], gridGroupType: GridGroupType, gridPosition: GridPosition) => {
+    const onDrop = (childId: string, itemIds: string[], trackType: TrackType, gridPosition: GridPosition) => {
         const { children, items } = stateRef.current;
         let index = childId !== null ?
             children.findIndex((x: { id: any; }) => x.id === childId) :
@@ -80,9 +80,9 @@ const useTrack = (props) => {
         };
 
         let next = [...children];
-        if (type !== gridGroupType) {
+        if (type !== TrackType) {
             const Track = ({children}: {children: ReactNode}) => {
-                if (gridGroupType === GridGroupType.Column) {
+                if (trackType === TrackType.Column) {
                     return (<Column>{children}</Column>);
                 }
 
@@ -121,12 +121,12 @@ const useTrack = (props) => {
         return null;
     }
 
-    return (<div className={`rubber-dock__${getGridGroupTypeClassName(type)}`} style={props?.style}>
+    return (<div className={`rubber-dock__${getTrackTypeClassName(type)}`} style={props?.style}>
         {children.map((child, index) => {
-                return (<GridGroup
+                return (<MetaDock
                     key={child.id} id={child.id} item={child.item} flex={child.flex}
                     onClose={() => onClose(child.id)}
-                    onDrop={(itemIds: string[], gridGroupType: GridGroupType, gridPosition: GridPosition) => onDrop(child.id, itemIds, gridGroupType, gridPosition)}
+                    onDrop={(itemIds: string[], TrackType: TrackType, gridPosition: GridPosition) => onDrop(child.id, itemIds, TrackType, gridPosition)}
                     onResize={index < children.length - 1 ? onResize : null} />);
             })}
         </div>);

@@ -5,16 +5,16 @@ import Resizer from "./Resizer";
 import Column from "./Column";
 import Row from "./Row";
 
-const GridGroup = props => {
+const MetaDock = props => {
     let {id, item, flex = 1, onClose, onDrop, onResize} = props;
 
     return (<>
-        <GridGroupInner id={id} item={item} flex={flex} onClose={onClose} onDrop={onDrop} />
+        <MetaDockActual id={id} item={item} flex={flex} onClose={onClose} onDrop={onDrop} />
         {onResize ? (<Resizer onResize={onResize} />) : null}
     </>);
 };
 
-const GridGroupInner = props => {
+const MetaDockActual = props => {
     let {id, item, flex, onClose, onDrop} = props;
 
     // Guard against using an invalid element against type checks
@@ -23,7 +23,7 @@ const GridGroupInner = props => {
     }
     const element = item as ReactElement<any>;
 
-    const isGridGroup = element.type === Column || element.type === Row;
+    const isTrack = element.type === Column || element.type === Row;
     const isStack = element.type === Stack;
     const isItem = element.type === Item;
 
@@ -33,7 +33,7 @@ const GridGroupInner = props => {
     // getFlexBasis default of 100 in Column/Row's onResize.
     const style = { flexBasis: `${flex * 100}%` };
 
-    if (isGridGroup) {
+    if (isTrack) {
         return cloneElement(element, {id, onClose, style});
     } else if (isStack) {
         return cloneElement(element, {id, onClose, onDrop, style});
@@ -46,4 +46,4 @@ const GridGroupInner = props => {
     return null;
 };
 
-export default GridGroup;
+export default MetaDock;

@@ -1,8 +1,8 @@
-import {GridGroupType} from "../util/common";
+import {TrackType} from "../util/common";
 import useTrack from "../hooks/useTrack";
 
 const Column = props => {
-    return useTrack({...props, type: GridGroupType.Column});
+    return useTrack({...props, type: TrackType.Column});
 };
 
 export default Column;
