@@ -22,7 +22,7 @@ const Resizer = props => {
     return (<div
         ref={ref}
         className="rubber-dock__resizer"
-        onMouseDown={() => onMouseDown()}>&nbsp;</div>);
+        onMouseDown={onMouseDown}>&nbsp;</div>);
 };
 
 export default Resizer;

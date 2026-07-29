@@ -9,4 +9,4 @@ export const useRegisterItem = (stackId, stackIndex, id, item, focus) => {
         // Registration happens once on mount, mirroring the item's lifetime in its stack.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-};
+}

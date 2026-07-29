@@ -3,6 +3,16 @@ export enum GridGroupType {
     Row
 }
 
+export const getGridGroupTypeClassName = (gridGroupType: GridGroupType) => {
+    switch (gridGroupType) {
+        case GridGroupType.Column:
+            return "column";
+        case GridGroupType.Row:
+        default:
+            return "row";
+    }
+}
+
 export enum GridPosition {
     Before,
     After

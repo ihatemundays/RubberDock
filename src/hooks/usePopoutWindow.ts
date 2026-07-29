@@ -43,4 +43,4 @@ export const usePopoutWindow = (isOpen: boolean, title: string, onClose: () => v
     }, [isOpen]);
 
     return container;
-};
+}
